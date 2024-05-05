@@ -119,36 +119,36 @@ L               [a-zA-Z_]
 "true"                                                          { return 'true'; }
 "system"                                                        { return 'system'; }
 "user"                                                          { return 'user'; }
-<range,len>".."                                                 { return '..'; }
-<*>"{"     		                                                { this.begin('INITIAL'); return '{'; }
-"}"     		                                                { this.begin('INITIAL'); return '}'; }
-<*>";"			                                                { this.begin('INITIAL'); return ';'; }
-<str>"+"                                                        { return('+'); }                                                      
-<qname,schema_path,unknown>":"			                        { return(':'); }
-<range>"|"			                                            { return('|'); }
-<schema_path>"/"			                                    { return('/'); }
-<date>{DIGIT}{4}"-"{DIGIT}{2}"-"{DIGIT}{2}                      { return 'DATE'; }
-<integer,range,len>"-"{DIGIT}*|{DIGIT}*                                            { return 'INTEGER'; }
-<range>"-"{DIGIT}+"."{DIGIT}+|{DIGIT}+"."{DIGIT}+                                     { return 'DECIMAL'; }'
-({L}|"_")({L}|{DIGIT}|[-_.])*                                                         { this.begin(unknown); return 'IDENTIFIER'; }
-<unknown>({L}|"_")({L}|{DIGIT}|[-_.])*                                                { this.begin(str); return 'IDENTIFIER'; }
-<identifier,qname,schema_path>({L}|"_")({L}|{DIGIT}|[-_.])*                           { return 'IDENTIFIER'; }
-<str>"\""                                                                             { this.begin(double_quoted_string); }
-<double_quoted_string>([^"])*                                                         { return 'QUOTED_STRING_PART'} 
-<double_quoted_string>"\""                                                            { this.begin(str); } 
-<str>"'"                                                                              { this.begin(single_quoted_string); }
-<single_quoted_string>([^'])*                                                         { return 'QUOTED_STRING_PART' }
-<single_quoted_string>"'"                                                             { this.begin(str); } 
-<str>([^\x09\x0A\x0B\x0D\x20;{'\""])([^\x09\x0A\x0B\x0D\x20;{"])*                         { return 'UNQUOTED_STRING'; }
-[\x09\x0A\x0B\x0D\x20]		                                                              {/* skip whitespaces in intital start condition */}
+<range,len>".."                                                                        { return '..'; }
+<*>"{"     		                                                                       { this.begin('INITIAL'); return '{'; }
+"}"     		                                                                       { this.begin('INITIAL'); return '}'; }
+<*>";"			                                                                       { this.begin('INITIAL'); return ';'; }
+<str>"+"                                                                               { return('+'); }                                                      
+<qname,schema_path,unknown>":"			                                               { return(':'); }
+<range>"|"			                                                                   { return('|'); }
+<schema_path>"/"			                                                           { return('/'); }
+<date>{DIGIT}{4}"-"{DIGIT}{2}"-"{DIGIT}{2}                                             { return 'DATE'; }
+<integer,range,len>"-"{DIGIT}*|{DIGIT}*                                                { return 'INTEGER'; }
+<range>"-"{DIGIT}+"."{DIGIT}+|{DIGIT}+"."{DIGIT}+                                      { return 'DECIMAL'; }'
+({L}|"_")({L}|{DIGIT}|[-_.])*                                                          { this.begin(unknown); return 'IDENTIFIER'; }
+<unknown>({L}|"_")({L}|{DIGIT}|[-_.])*                                                 { this.begin(str); return 'IDENTIFIER'; }
+<identifier,qname,schema_path>({L}|"_")({L}|{DIGIT}|[-_.])*                            { return 'IDENTIFIER'; }
+<str>"\""                                                                              { this.begin(double_quoted_string); }
+<double_quoted_string>([^"])*                                                          { return 'QUOTED_STRING_PART'} 
+<double_quoted_string>"\""                                                             { this.begin(str); } 
+<str>"'"                                                                               { this.begin(single_quoted_string); }
+<single_quoted_string>([^'])*                                                          { return 'QUOTED_STRING_PART' }
+<single_quoted_string>"'"                                                              { this.begin(str); } 
+<str>([^\x09\x0A\x0B\x0D\x20;{'\""])([^\x09\x0A\x0B\x0D\x20;{"])*                      { return 'UNQUOTED_STRING'; }
+[\x09\x0A\x0B\x0D\x20]		                                                           {/* skip whitespaces in intital start condition */}
 <identifier,str,qname,schema_path,date,range,len,integer,status>[\x09\x0A\x0B\x0D\x20] { }
 <identifier,qname,schema_path,date,range,len,integer>"\""                              { /* these are *-arg-str in grammar so need to skip quotes */ }
-"/*"                                                                                      {  this.begin(comment); }
-<comment>[^*\n]*                                                                          {/* eat anything that's not a '*' */ }
-<comment>"*"+[^*/\n]*                                                                     {/* eat up '*'s not followed by '/'s */ }
-<comment>\n                                                                               {}
-<comment>"*"+"/"                                                                          {  this.begin(INITIAL); }
-<*>.			                                                                          { cosnole.log('FIXME: uhandled char') }
+"/*"                                                                                   {  this.begin(comment); }
+<comment>[^*\n]*                                                                       { /* eat anything that's not a '*' */ }
+<comment>"*"+[^*/\n]*                                                                  { /* eat up '*'s not followed by '/'s */ }
+<comment>\n                                                                            {}
+<comment>"*"+"/"                                                                       {  this.begin(INITIAL); }
+<*>.			                                                                       { cosnole.log('FIXME: uhandled char') }
 
 /lex
 
