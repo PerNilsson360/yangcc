@@ -213,7 +213,7 @@ module_body_stmt
 | augment_stmt                                                       { $$ = $1; }
 | rpc_stmt                                                           { $$ = $1; }    
 | notification_stmt                                                  { $$ = $1; } 
-// /*                            deviation-stmt) */
+/*                            deviation-stmt) */
 | unknown_stmt                                                       { $$ = $1; }
 ;
 
@@ -226,44 +226,44 @@ module_body_stmt
 /*                              revision-stmts */
 /*                              body-stmts */
 /*                          "}" optsep */
-// submodule_stmt
-// : 'submodule' 'IDENTIFIER' '{' submodule_body_stmts '}'               {}
-// ;
+submodule_stmt
+: 'submodule' 'IDENTIFIER' '{' submodule_body_stmts '}'               {}
+;
 
-// submodule_body_stmts
-// : submodule_body_stmt                                                {}
-// | submodule_body_stmts submodule_body_stmt                           {}
-// ;
+submodule_body_stmts
+: submodule_body_stmt                                                {}
+| submodule_body_stmts submodule_body_stmt                           {}
+;
 
-// submodule_body_stmt
-// : yang_version_stmt                                                  { $$ = $1; } /* submodule-header-stmts */
-// | belongs_to_stmt                                                    { $$ = $1; } 
-// | import_stmt                                                        { $$ = $1; } /* linkage-stmts*/
-// | include_stmt                                                       { $$ = $1; }
-// | organization_stmt                                                  { $$ = $1; } /* meta-stmts*/
-// | contact_stmt                                                       { $$ = $1; }
-// | description_stmt                                                   { $$ = $1; } 
-// | reference_stmt                                                     { $$ = $1; }
-// | revision_stmt                                                      { $$ = $1; } /* revision-stmts */
-// | extension_stmt                                                     { $$ = $1; } /* body-stmts */
-// | feature_stmt                                                       { $$ = $1; }
-// | identity_stmt                                                      { $$ = $1; }
-// | typedef_stmt                                                       { $$ = $1; }
-// | grouping_stmt                                                      { $$ = $1; }
-// | container_stmt                                                     { $$ = $1; } /*  data-def-stmt */
-// | leaf_stmt                                                          { $$ = $1; }
-// | leaf_list_stmt                                                     { $$ = $1; }
-// | list_stmt                                                          { $$ = $1; }
-// | choice_stmt                                                        { $$ = $1; }
-// | anydata_stmt                                                       { $$ = $1; }
-// | anyxml_stmt                                                        { $$ = $1; }
-// | uses_stmt                                                          { $$ = $1; }
-// | augment_stmt                                                       { $$ = $1; }
-// | rpc_stmt                                                           { $$ = $1; }                    
-// | notification_stmt                                                  { $$ = $1; }
-// /*                            deviation-stmt) */
-// | unknown_stmt                                                       { $$ = $1; } 
-// ;
+submodule_body_stmt
+: yang_version_stmt                                                  { $$ = $1; } /* submodule-header-stmts */
+| belongs_to_stmt                                                    { $$ = $1; } 
+| import_stmt                                                        { $$ = $1; } /* linkage-stmts*/
+| include_stmt                                                       { $$ = $1; }
+| organization_stmt                                                  { $$ = $1; } /* meta-stmts*/
+| contact_stmt                                                       { $$ = $1; }
+| description_stmt                                                   { $$ = $1; } 
+| reference_stmt                                                     { $$ = $1; }
+| revision_stmt                                                      { $$ = $1; } /* revision-stmts */
+| extension_stmt                                                     { $$ = $1; } /* body-stmts */
+| feature_stmt                                                       { $$ = $1; }
+| identity_stmt                                                      { $$ = $1; }
+| typedef_stmt                                                       { $$ = $1; }
+| grouping_stmt                                                      { $$ = $1; }
+| container_stmt                                                     { $$ = $1; } /*  data-def-stmt */
+| leaf_stmt                                                          { $$ = $1; }
+| leaf_list_stmt                                                     { $$ = $1; }
+| list_stmt                                                          { $$ = $1; }
+| choice_stmt                                                        { $$ = $1; }
+| anydata_stmt                                                       { $$ = $1; }
+| anyxml_stmt                                                        { $$ = $1; }
+| uses_stmt                                                          { $$ = $1; }
+| augment_stmt                                                       { $$ = $1; }
+| rpc_stmt                                                           { $$ = $1; }                    
+| notification_stmt                                                  { $$ = $1; }
+/*                            deviation-stmt) */
+| unknown_stmt                                                       { $$ = $1; } 
+;
 
 // /*    module-header-stmts = ;; these stmts can appear in any order */
 // /*                          yang-version-stmt */
