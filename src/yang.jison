@@ -53,7 +53,7 @@ L               [a-zA-Z_]
 "choice"                                                        { this.begin('identifier'); return 'choice'; }
 "config"                                                        { return('config'); }
 "contact"                                                       { this.begin('str'); return 'contact'; }
-"container"	                                                    { this.begin('identifier'); return 'CONTAINER'; }
+"container"	                                                    { this.begin('identifier'); return 'container'; }
 "default"                                                       { this.begin('str'); return 'default'; } 
 "description"                                                   { this.begin('str'); return 'description'; }
 "enum"                                                          { this.begin('str'); return' enum'; }
@@ -79,35 +79,35 @@ L               [a-zA-Z_]
 "max-elements"                                                  { this.begin('integer'); return max-elements; }
 "min-elements"                                                  { this.begin('integer'); return min-elements; }
 "modifier"                                                      { return('modifier'); }
-"module"		                                                { this.begin('identifier'); return 'module'; }  
+"module"		                                                { console.log("### module");this.begin('identifier'); return 'module'; }  
 "must"                                                          { this.begin('str'); return 'must'; }
 "namespace"                                                     { this.begin('str'); return 'namespace'; }
 "notification"                                                  { this.begin('identifier'); return 'notification'; }
 "ordered-by"                                                    { return 'ordered-by'; }
 "organization"                                                  { this.begin('str'); return 'organization'; }
 "output"                                                        { return 'output'; }
-"path"                                                          { this.begin(str); return 'path'; }
-"pattern"                                                       { this.begin(str); return 'pattern'; }
-"position"                                                      { this.begin(integer); return 'position'; }
-"prefix"                                                        { this.begin(identifier); return 'prefix'; }
-"presence"                                                      { this.begin(str); return 'presence'; }
-"range"                                                         { this.begin(range); return 'range'; }
-"reference"                                                     { this.begin(str); return 'reference'; }
+"path"                                                          { this.begin('str'); return 'path'; }
+"pattern"                                                       { this.begin('str'); return 'pattern'; }
+"position"                                                      { this.begin('integer'); return 'position'; }
+"prefix"                                                        { this.begin('identifier'); return 'prefix'; }
+"presence"                                                      { this.begin('str'); return 'presence'; }
+"range"                                                         { this.begin('range'); return 'range'; }
+"reference"                                                     { this.begin('str'); return 'reference'; }
 "refine"                                                        { return 'refine'; }
 "require-instance"                                              { return 'require-instance'; }
-"revision"                                                      { this.begin(date); return 'revision'; }
-"revision-date"                                                 { this.begin(date); return 'revision-date'; }
-"rpc"                                                           { this.begin(identifier); return 'rpc'; }
-"status"                                                        { this.begin(status); return 'status'; }
-"submodule"                                                     { this.begin(identifier); return'submodule'; }
-"type"		                                                    { this.begin(qname); return 'type'; }
-"typedef"                                                       { this.begin(identifier); return 'typedef'; }
-"unique"                                                        { this.begin(schema_path); return 'unique'; }
-"units"                                                         { this.begin(str); return 'units'; }
-"uses"                                                          { this.begin(qname); return 'uses'; }
-"value"                                                         { this.begin(integer); return 'value'; }
-"when"                                                          { this.begin(str); return 'when'; }
-"yang-version"                                                  { this.begin(str); return 'yang-version'; }
+"revision"                                                      { this.begin('date'); return 'revision'; }
+"revision-date"                                                 { this.begin('date'); return 'revision-date'; }
+"rpc"                                                           { this.begin('identifier'); return 'rpc'; }
+"status"                                                        { this.begin('status'); return 'status'; }
+"submodule"                                                     { this.begin('identifier'); return'submodule'; }
+"type"		                                                    { this.begin('qname'); return 'type'; }
+"typedef"                                                       { this.begin('identifier'); return 'typedef'; }
+"unique"                                                        { this.begin('schema_path'); return 'unique'; }
+"units"                                                         { this.begin('str'); return 'units'; }
+"uses"                                                          { this.begin('qname'); return 'uses'; }
+"value"                                                         { this.begin('integer'); return 'value'; }
+"when"                                                          { this.begin('str'); return 'when'; }
+"yang-version"                                                  { console.log("### yang-version"); this.begin('str'); return 'yang-version'; }
 "yin-element"                                                   { return 'yin-element'; }
 <status>"current"                                               { return 'current'; }
 <status>"obsolete"                                              { return 'obsolete'; }
@@ -120,8 +120,8 @@ L               [a-zA-Z_]
 "system"                                                        { return 'system'; }
 "user"                                                          { return 'user'; }
 <range,len>".."                                                                        { return '..'; }
-<*>"{"     		                                                                       { this.begin('INITIAL'); return '{'; }
-"}"     		                                                                       { this.begin('INITIAL'); return '}'; }
+<*>"{"     		                                                                       { console.log('{'); this.begin('INITIAL'); return '{'; }
+"}"     		                                                                       { console.log('}'); this.begin('INITIAL'); return '}'; }
 <*>";"			                                                                       { this.begin('INITIAL'); return ';'; }
 <str>"+"                                                                               { return('+'); }                                                      
 <qname,schema_path,unknown>":"			                                               { return(':'); }
@@ -130,40 +130,42 @@ L               [a-zA-Z_]
 <date>{DIGIT}{4}"-"{DIGIT}{2}"-"{DIGIT}{2}                                             { return 'DATE'; }
 <integer,range,len>"-"{DIGIT}*|{DIGIT}*                                                { return 'INTEGER'; }
 <range>"-"{DIGIT}+"."{DIGIT}+|{DIGIT}+"."{DIGIT}+                                      { return 'DECIMAL'; }'
-({L}|"_")({L}|{DIGIT}|[-_.])*                                                          { this.begin(unknown); return 'IDENTIFIER'; }
-<unknown>({L}|"_")({L}|{DIGIT}|[-_.])*                                                 { this.begin(str); return 'IDENTIFIER'; }
-<identifier,qname,schema_path>({L}|"_")({L}|{DIGIT}|[-_.])*                            { return 'IDENTIFIER'; }
-<str>"\""                                                                              { this.begin(double_quoted_string); }
+({L}|"_")({L}|{DIGIT}|[-_.])*                                                          { console.log('## identifier 1'); this.begin('unknown'); return 'IDENTIFIER'; }
+<unknown>({L}|"_")({L}|{DIGIT}|[-_.])*                                                 { console.log('## identifier 2'); this.begin('str'); return 'IDENTIFIER'; }
+<identifier,qname,schema_path>({L}|"_")({L}|{DIGIT}|[-_.])*                            { console.log('## identifier 3'); return 'IDENTIFIER'; }
+<str>"\""                                                                              { this.begin('double_quoted_string'); }
 <double_quoted_string>([^"])*                                                          { return 'QUOTED_STRING_PART'} 
-<double_quoted_string>"\""                                                             { this.begin(str); } 
-<str>"'"                                                                               { this.begin(single_quoted_string); }
+<double_quoted_string>"\""                                                             { this.begin('str'); } 
+<str>"'"                                                                               { this.begin('single_quoted_string'); }
 <single_quoted_string>([^'])*                                                          { return 'QUOTED_STRING_PART' }
-<single_quoted_string>"'"                                                              { this.begin(str); } 
+<single_quoted_string>"'"                                                              { this.begin('str'); } 
 <str>([^\x09\x0A\x0B\x0D\x20;{'\""])([^\x09\x0A\x0B\x0D\x20;{"])*                      { return 'UNQUOTED_STRING'; }
 [\x09\x0A\x0B\x0D\x20]		                                                           {/* skip whitespaces in intital start condition */}
 <identifier,str,qname,schema_path,date,range,len,integer,status>[\x09\x0A\x0B\x0D\x20] { }
 <identifier,qname,schema_path,date,range,len,integer>"\""                              { /* these are *-arg-str in grammar so need to skip quotes */ }
-"/*"                                                                                   {  this.begin(comment); }
+"/*"                                                                                   { this.begin('comment'); }
 <comment>[^*\n]*                                                                       { /* eat anything that's not a '*' */ }
 <comment>"*"+[^*/\n]*                                                                  { /* eat up '*'s not followed by '/'s */ }
 <comment>\n                                                                            {}
-<comment>"*"+"/"                                                                       {  this.begin(INITIAL); }
+<comment>"*"+"/"                                                                       { this.begin('INITIAL'); }
 <*>.			                                                                       { cosnole.log('FIXME: uhandled char') }
 
 /lex
 
-%start top_stmts
+%start top_stmt
 
 %% /* language grammar */
-/* comment */
+/*
+  Lets go for that a file must contain either a module or a sub module 
 top_stmts
 : top_stmt                                                           {}
 | top_stmts top_stmt                                                 {}
 ;
+*/
 
 top_stmt
-: module_stmt                                                        { $$ = $1; }
-| submodule_stmt                                                     { $$ = $1; }
+: module_stmt                                                        { return $1; }
+| submodule_stmt                                                     { return $1; }
 ;
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -178,7 +180,7 @@ top_stmt
 /*                              body-stmts */
 /*                          "}" optsep */
 module_stmt
-: 'module' 'IDENTIFIER' '{' module_body_stmts '}'                     {}
+: 'module' 'IDENTIFIER' '{' module_body_stmts '}'                    {}
 ;
 
 module_body_stmts
@@ -707,7 +709,7 @@ default_stmt
 /*                               [reference-stmt] */
 /*                            "}") stmtsep */
 enum_specification
-: 'enum' string ';'                                     { $$ = new Yang::Ast::EnumSpec($2); }
+: 'enum' string ';'                                     {}
 | 'enum' string '{' enum_specification_body '}'          {}
 ;
 
@@ -768,8 +770,8 @@ bit_stmt
 ;
 
 bit_body
-: bit_body_stmt                                                       { $$ = new Yang::Ast::Nodes(1, $1); }
-| bit_body bit_body_stmt                                              { $1->push_back($2); $$ = $1; }
+: bit_body_stmt                                                       {}
+| bit_body bit_body_stmt                                              {}
 ;
 
 bit_body_stmt
@@ -1001,7 +1003,7 @@ container_stmt_body_stmt
 /*                              [reference-stmt] */
 /*                           "}" stmtsep */
 leaf_stmt
-: 'LEAF' 'IDENTIFIER' '{' leaf_stmt_body '}'                             {}
+: 'leaf' 'IDENTIFIER' '{' leaf_stmt_body '}'                             {}
 ;
 
 leaf_stmt_body
@@ -1303,13 +1305,13 @@ anyxml_stmt
 /*                               *uses-augment-stmt */
 /*                           "}") stmtsep */
 uses_stmt
-: 'uses' identifier_ref ';'                    { $$ = new Yang::Ast::Uses($2); }
-| 'uses' identifier_ref '{' uses_stmt_body '}' { $$ = new Yang::Ast::Uses($2, $4); }
+: 'uses' identifier_ref ';'                    {}
+| 'uses' identifier_ref '{' uses_stmt_body '}' {}
 ;
 
 uses_stmt_body
-: uses_stmt_body_stmt                           { $$ = new Yang::Ast::Nodes(1, $1); }
-| uses_stmt_body uses_stmt_body_stmt            { $1->push_back($2); $$ = $1; }
+: uses_stmt_body_stmt                           {}
+| uses_stmt_body uses_stmt_body_stmt            {}
 ;
 
 uses_stmt_body_stmt

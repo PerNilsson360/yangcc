@@ -23,7 +23,16 @@
 /* eslint-env mocha */
 
 const assert = require('assert');
+const fs = require ('node:fs');
+const evaluate = require('../src/eval').evaluate;
+const toString = require('../src/eval').toString;
 
-describe('dummy test', () => {
-  assert.equal(true, true);
+function readModel(name) {
+  return fs.readFileSync(`${__dirname}/models/${name}`, 'utf8');
+}
+
+describe('test-container', () => {
+  const m = readModel('test-container.yang');
+  console.log(m);
+  console.log(toString(evaluate(m)));
 });
