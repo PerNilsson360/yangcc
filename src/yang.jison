@@ -323,8 +323,8 @@ yang_version_stmt
 /*                              [revision-date-stmt] */
 /*                          "}" stmtsep */
 import_stmt
-: 'import' 'IDENTIFIER' '{' prefix_stmt '}'                            { $$ = new Abs($1, new QName($2)); }
-| 'import' 'IDENTIFIER' '{' prefix_stmt revision_date_stmt '}'         { $$ = new Abs($1, new QName($2), [$4, $5]); }
+: 'import' 'IDENTIFIER' '{' prefix_stmt '}'                            { $$ = new Abs($1, $2); }
+| 'import' 'IDENTIFIER' '{' prefix_stmt revision_date_stmt '}'         { $$ = new Abs($1, $2, [$4, $5]); }
 ;
 
 /*    include-stmt        = include-keyword sep identifier-arg-str optsep */
@@ -333,21 +333,21 @@ import_stmt
 /*                               [revision-date-stmt] */
 /*                           "}") stmtsep */
 include_stmt
-: 'include' 'IDENTIFIER' ';'                                           { $$ = new Abs($1, new QName($2)); }
-| 'include' 'IDENTIFIER' '{' '}'                                       { $$ = new Abs($1, new QName($2)); }
-| 'include' 'IDENTIFIER' '{' revision_date_stmt '}'                    { $$ = new Abs($1, new QName($2), [$1]); }
+: 'include' 'IDENTIFIER' ';'                                           { $$ = new Abs($1, $2); }
+| 'include' 'IDENTIFIER' '{' '}'                                       { $$ = new Abs($1, $2); }
+| 'include' 'IDENTIFIER' '{' revision_date_stmt '}'                    { $$ = new Abs($1, $2, [$1]); }
 ;
 
 /*    namespace-stmt      = namespace-keyword sep uri-str stmtend */
 namespace_stmt
-: 'namespace' string ';'                                               { $$ = new Abs($1, new QName($2)); }
+: 'namespace' string ';'                                               { $$ = new Abs($1, $2); }
 ;
 
 /*    uri-str             = < a string that matches the rule > < URI in RFC 3986 > */
 
 /*    prefix-stmt         = prefix-keyword sep prefix-arg-str stmtend */
 prefix_stmt
-: 'prefix' 'IDENTIFIER' ';'                                            { $$ = new Abs($1, new QName($2)); }
+: 'prefix' 'IDENTIFIER' ';'                                            { $$ = new Abs($1, $2); }
 ;
 
 /*    belongs-to-stmt     = belongs-to-keyword sep identifier-arg-str optsep */
@@ -355,32 +355,32 @@ prefix_stmt
 /*                              prefix-stmt */
 /*                          "}" stmtsep */
 belongs_to_stmt
-: 'belongs-to' 'IDENTIFIER' '{' prefix_stmt '}'                        { $$ = new Abs($1, new QName($2), [$4]);}
+: 'belongs-to' 'IDENTIFIER' '{' prefix_stmt '}'                        { $$ = new Abs($1, $2, [$4]);}
 ;
 
 /*    organization-stmt   = organization-keyword sep string stmtend */
 organization_stmt
-: 'organization' string ';'                                            { $$ = new Abs($1, new QName($2)); }
+: 'organization' string ';'                                            { $$ = new Abs($1, $2); }
 ;
 
 /*    contact-stmt        = contact-keyword sep string stmtend */
 contact_stmt
-: 'contact' string ';'                                                 { $$ = new Abs($1, new QName($2)); }
+: 'contact' string ';'                                                 { $$ = new Abs($1, $2); }
 ;
 
 /*    description-stmt    = description-keyword sep string stmtend */
 description_stmt
-: 'description' string ';'                                             { $$ = new Abs($1, new QName($2)); }
+: 'description' string ';'                                             { $$ = new Abs($1, $2); }
 ;
 
 /*    reference-stmt      = reference-keyword sep string stmtend */
 reference_stmt
-: 'reference' string ';'                                               { $$ = new Abs($1, new QName($2)); }
+: 'reference' string ';'                                               { $$ = new Abs($1, $2); }
 ;
 
 /*    units-stmt          = units-keyword sep string stmtend */
 units_stmt
-: 'units' string ';'                                                   { $$ = new Abs($1, new QName($2)); }
+: 'units' string ';'                                                   { $$ = new Abs($1, $2); }
 ;
 
 /*    revision-stmt       = revision-keyword sep revision-date optsep */
@@ -391,8 +391,8 @@ units_stmt
 /*                               [reference-stmt] */
 /*                           "}") stmtsep */
 revision_stmt
-: 'revision' 'DATE' ';'                                               { $$ = new Abs($1, new QName($2)); }
-| 'revision' 'DATE' '{' revision_body '}'                             { new Abs($1, new QName($2), $4); }
+: 'revision' 'DATE' ';'                                               { $$ = new Abs($1, $2); }
+| 'revision' 'DATE' '{' revision_body '}'                             { new Abs($1, $2, $4); }
 ;
 
 revision_body
@@ -409,7 +409,7 @@ revision_body_stmt
 /*    revision-date       = date-arg-str */
 /*    revision-date-stmt  = revision-date-keyword sep revision-date stmtend */
 revision_date_stmt
-: 'revision-date' 'DATE' ';'                                          { $$ = new Abs($1, new QName($2)); }
+: 'revision-date' 'DATE' ';'                                          { $$ = new Abs($1, $2); }
 ;
 
 /*    extension-stmt      = extension-keyword sep identifier-arg-str optsep */
@@ -422,8 +422,8 @@ revision_date_stmt
 /*                               [reference-stmt] */
 /*                           "}") stmtsep */
 extension_stmt
-: 'extension' 'IDENTIFIER' ';'                                        { $$ = new Abs($1, new QName($2)); }
-| 'extension' 'IDENTIFIER' '{' extension_stmt_body '}'                { $$ = new Abs($1, new QName($2), $4); }   
+: 'extension' 'IDENTIFIER' ';'                                        { $$ = new Abs($1, $2); }
+| 'extension' 'IDENTIFIER' '{' extension_stmt_body '}'                { $$ = new Abs($1, $2, $4); }   
 ;
 
 extension_stmt_body
@@ -445,7 +445,7 @@ extension_stmt_body_stmt
 /*                               [yin-element-stmt] */
 /*                           "}") stmtsep */
 argument_stmt
-: 'argument' 'IDENTIFIER' ';'                                       { $$ = new Abs($1, new QName($2)); }
+: 'argument' 'IDENTIFIER' ';'                                       { $$ = new Abs($1, $2); }
 ;
 
 /*    yin-element-stmt    = yin-element-keyword sep yin-element-arg-str */
@@ -470,9 +470,9 @@ true_false_arg
 /*                               [reference-stmt] */
 /*                           "}") stmtsep */
 identity_stmt
-: 'identity' 'IDENTIFIER' ';'                                      { $$ = new Abs($1, new QName($2)); }
-| 'identity' 'IDENTIFIER' '{' '}'                                  { $$ = new Abs($1, new QName($2)); }
-| 'identity' 'IDENTIFIER' '{' identity_stmt_body '}'               { $$ = new Abs($1, new QName($2), $4);}
+: 'identity' 'IDENTIFIER' ';'                                      { $$ = new Abs($1, $2); }
+| 'identity' 'IDENTIFIER' '{' '}'                                  { $$ = new Abs($1, $2); }
+| 'identity' 'IDENTIFIER' '{' identity_stmt_body '}'               { $$ = new Abs($1, $2, $4);}
 ;
 
 identity_stmt_body
@@ -503,9 +503,9 @@ base_stmt
 /*                               [reference-stmt] */
 /*                           "}") stmtsep */
 feature_stmt
-: 'feature' 'IDENTIFIER' ';'                                       { $$ = new Abs($1, new QName($2)); }
-| 'feature' 'IDENTIFIER' '{' '}'                                   { $$ = new Abs($1, new QName($2)); }
-| 'feature' 'IDENTIFIER' '{' feature_stmt_body '}'                 { $$ = new Abs($1, new QName($2), $4); }
+: 'feature' 'IDENTIFIER' ';'                                       { $$ = new Abs($1, $2); }
+| 'feature' 'IDENTIFIER' '{' '}'                                   { $$ = new Abs($1, $2); }
+| 'feature' 'IDENTIFIER' '{' feature_stmt_body '}'                 { $$ = new Abs($1, $2, $4); }
 ;
 
 feature_stmt_body
@@ -542,7 +542,7 @@ if_feature_stmt
 /*                              [reference-stmt] */
 /*                           "}" stmtsep */
 typedef_stmt
-: 'typedef' 'IDENTIFIER' '{' typedef_stmt_body '}'                  { $$ = new Abs($1, new QName($2)); }
+: 'typedef' 'IDENTIFIER' '{' typedef_stmt_body '}'                  { $$ = new Abs($1, $2); }
 ;
 
 typedef_stmt_body
@@ -954,8 +954,8 @@ grouping_stmt_body_stmt
 /*                               *notification-stmt */
 /*                           "}") stmtsep */
 container_stmt
-: 'container' 'IDENTIFIER' ';'                                          { $$ = new Abs($1, new QName($2)); }
-| 'container' 'IDENTIFIER' '{' container_stmt_body '}'                  { $$ = new Abs($1, new QName($2), $4); }
+: 'container' 'IDENTIFIER' ';'                                          { $$ = new Abs($1, $2); }
+| 'container' 'IDENTIFIER' '{' container_stmt_body '}'                  { $$ = new Abs($1, $2, $4); }
 ;
 
 container_stmt_body
@@ -1003,7 +1003,7 @@ container_stmt_body_stmt
 /*                              [reference-stmt] */
 /*                           "}" stmtsep */
 leaf_stmt
-: 'leaf' 'IDENTIFIER' '{' leaf_stmt_body '}'                            { $$ = new Abs($1, new QName($2), $4); }
+: 'leaf' 'IDENTIFIER' '{' leaf_stmt_body '}'                            { $$ = new Abs($1, $2, $4); }
 ;
 
 leaf_stmt_body
