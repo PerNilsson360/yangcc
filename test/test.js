@@ -23,7 +23,7 @@
 /* eslint-env mocha */
 
 const assert = require('assert');
-const fs = require ('node:fs');
+const fs = require('node:fs');
 const evaluate = require('../src/eval').evaluate;
 const toString = require('../src/eval').toString;
 

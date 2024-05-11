@@ -612,7 +612,7 @@ type_body_stmt
 /*                               [reference-stmt] */
 /*                            "}") stmtsep */
 range_stmt
-: 'range' range_arg  ';'                                             {}
+: 'range' range_arg  ';'                                             { $$ = $$ = new Abs($1, $2); }
 ;                          
 
 /*    decimal64-specification = ;; these stmts can appear in any order */
@@ -1720,24 +1720,24 @@ unknown_stmt
 /*    range-arg-str       = < a string that matches the rule > < range-arg > */
 /*    range-arg           = range-part *(optsep "|" optsep range-part) */
 range_arg
-: range_parts                                                                  {}
+: range_parts                                                                  { $$ = new Range($1); }
 ;
 
 range_parts
-: range_part                                                                   {}
-| range_parts '|' range_part                                                   {}
+: range_part                                                                   { $$ = [$1]; }
+| range_parts '|' range_part                                                   { $$ = $1; $$.push($3); }
 ;
 
 /*    range-part          = range-boundary [optsep ".." optsep range-boundary] */
 range_part
-: range_boundary                                                               {}
-| range_boundary '..' range_boundary                                           {}
+: range_boundary                                                               { $$ = new RangePart($1); }
+| range_boundary '..' range_boundary                                           { $$ = new RangePart($1, $3);}
 ;
 
 /*    range-boundary      = min-keyword / max-keyword / integer-value / decimal-value */
 range_boundary
-: 'min'                                                                        {}
-| 'max'                                                                        {}
+: 'min'                                                                        { $$ = Number.MIN_VALUE}
+| 'max'                                                                        { $$ = Number.MAX_VALUE}
 | 'INTEGER'                                                                    { $$ = $1; }
 | 'DECIMAL'                                                                    { $$ = $1; }
 ;
@@ -1750,8 +1750,8 @@ length_arg
 ;
 
 length_parts
-: length_part                                                                {}               
-| length_parts '|' length_part                                               {}
+: length_part                                                                { $$ = [$1]; }
+| length_parts '|' length_part                                               { $$ = $1; $$.push($2); }
 ;
 
 /*    length-part         = length-boundary [optsep ".." optsep length-boundary] */
@@ -2057,4 +2057,33 @@ QName.prototype.toString = function () {
     }
     result += this.name;
     return result;
+}
+
+function Range(parts) {
+    this.parts = parts;
+}
+
+Range.prototype.toString = function () {
+    let result = "";
+    for (let i = 0; i < this.parts.length; i++) {
+        if (i !== 0) {
+            result += " | ";
+        }
+        result += this.parts[i];
+    }
+    return result;
+}
+
+function RangePart(lower, upper) {
+    this.lower = lower;
+    this.upper = upper;
+} 
+
+RangePart.prototype.toString = function () {
+    let lower = this.lower === Number.MIN_VALUE ? 'min' : this.lower;
+    if (typeof this.upper === 'undefined') {
+        return lower.toString();
+    }
+    let upper = this.upper === Number.MAx_VALUE ? 'min' : this.upper;
+    return `${lower}..${upper}`;
 }
