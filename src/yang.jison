@@ -79,7 +79,7 @@ L               [a-zA-Z_]
 "max-elements"                                                  { this.begin('integer'); return max-elements; }
 "min-elements"                                                  { this.begin('integer'); return min-elements; }
 "modifier"                                                      { return('modifier'); }
-"module"		                                                { console.log("### module");this.begin('identifier'); return 'module'; }  
+"module"		                                                { this.begin('identifier'); return 'module'; }  
 "must"                                                          { this.begin('str'); return 'must'; }
 "namespace"                                                     { this.begin('str'); return 'namespace'; }
 "notification"                                                  { this.begin('identifier'); return 'notification'; }
@@ -107,21 +107,21 @@ L               [a-zA-Z_]
 "uses"                                                          { this.begin('qname'); return 'uses'; }
 "value"                                                         { this.begin('integer'); return 'value'; }
 "when"                                                          { this.begin('str'); return 'when'; }
-"yang-version"                                                  { console.log("### yang-version"); this.begin('str'); return 'yang-version'; }
-"yin-element"                                                   { return 'yin-element'; }
-<status>"current"                                               { return 'current'; }
-<status>"obsolete"                                              { return 'obsolete'; }
-<status>"deprecated"                                            { return 'deprecatedd'; }
-"false"                                                         { return 'false'; }
-"invert-match"                                                  { return 'invert-match'; }
-<range,len>"max"                                                { return 'max'; }
-<range,len>"min"                                                { return 'min'; }
-"true"                                                          { return 'true'; }
-"system"                                                        { return 'system'; }
-"user"                                                          { return 'user'; }
+"yang-version"                                                  { this.begin('str'); return 'yang-version'; }
+"yin-element"                                                                          { return 'yin-element'; }
+<status>"current"                                                                      { return 'current'; }
+<status>"obsolete"                                                                     { return 'obsolete'; }
+<status>"deprecated"                                                                   { return 'deprecatedd'; }
+"false"                                                                                { return 'false'; }
+"invert-match"                                                                         { return 'invert-match'; }
+<range,len>"max"                                                                       { return 'max'; }
+<range,len>"min"                                                                       { return 'min'; }
+"true"                                                                                 { return 'true'; }
+"system"                                                                               { return 'system'; }
+"user"                                                                                 { return 'user'; }
 <range,len>".."                                                                        { return '..'; }
-<*>"{"     		                                                                       { console.log('{'); this.begin('INITIAL'); return '{'; }
-"}"     		                                                                       { console.log('}'); this.begin('INITIAL'); return '}'; }
+<*>"{"     		                                                                       { this.begin('INITIAL'); return '{'; }
+"}"     		                                                                       { this.begin('INITIAL'); return '}'; }
 <*>";"			                                                                       { this.begin('INITIAL'); return ';'; }
 <str>"+"                                                                               { return('+'); }                                                      
 <qname,schema_path,unknown>":"			                                               { return(':'); }
@@ -130,9 +130,9 @@ L               [a-zA-Z_]
 <date>{DIGIT}{4}"-"{DIGIT}{2}"-"{DIGIT}{2}                                             { return 'DATE'; }
 <integer,range,len>"-"{DIGIT}*|{DIGIT}*                                                { return 'INTEGER'; }
 <range>"-"{DIGIT}+"."{DIGIT}+|{DIGIT}+"."{DIGIT}+                                      { return 'DECIMAL'; }'
-({L}|"_")({L}|{DIGIT}|[-_.])*                                                          { console.log('## identifier 1'); this.begin('unknown'); return 'IDENTIFIER'; }
-<unknown>({L}|"_")({L}|{DIGIT}|[-_.])*                                                 { console.log('## identifier 2'); this.begin('str'); return 'IDENTIFIER'; }
-<identifier,qname,schema_path>({L}|"_")({L}|{DIGIT}|[-_.])*                            { console.log('## identifier 3'); return 'IDENTIFIER'; }
+({L}|"_")({L}|{DIGIT}|[-_.])*                                                          { this.begin('unknown'); return 'IDENTIFIER'; }
+<unknown>({L}|"_")({L}|{DIGIT}|[-_.])*                                                 { this.begin('str'); return 'IDENTIFIER'; }
+<identifier,qname,schema_path>({L}|"_")({L}|{DIGIT}|[-_.])*                            { return 'IDENTIFIER'; }
 <str>"\""                                                                              { this.begin('double_quoted_string'); }
 <double_quoted_string>([^"])*                                                          { return 'QUOTED_STRING_PART'} 
 <double_quoted_string>"\""                                                             { this.begin('str'); } 
@@ -164,8 +164,8 @@ top_stmts
 */
 
 top_stmt
-: module_stmt                                                        { return $1; }
-| submodule_stmt                                                     { return $1; }
+: module_stmt                                                                          { return $1; }
+| submodule_stmt                                                                       { return $1; }
 ;
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -180,12 +180,12 @@ top_stmt
 /*                              body-stmts */
 /*                          "}" optsep */
 module_stmt
-: 'module' 'IDENTIFIER' '{' module_body_stmts '}'                    {}
+: 'module' 'IDENTIFIER' '{' module_body_stmts '}'                    { $$ = new Abs($1, new QName($2), $4); }
 ;
 
 module_body_stmts
-: module_body_stmt                                                   {}
-| module_body_stmts module_body_stmt                                 {}
+: module_body_stmt                                                   { $$ = [$1]; }
+| module_body_stmts module_body_stmt                                 { $$ = $1; $$.push($2); }
 ;
 
 module_body_stmt
@@ -229,7 +229,7 @@ module_body_stmt
 /*                              body-stmts */
 /*                          "}" optsep */
 submodule_stmt
-: 'submodule' 'IDENTIFIER' '{' submodule_body_stmts '}'               {}
+: 'submodule' 'IDENTIFIER' '{' submodule_body_stmts '}'              {}
 ;
 
 submodule_body_stmts
@@ -311,7 +311,7 @@ submodule_body_stmt
 
 /*    yang-version-stmt   = yang-version-keyword sep yang-version-arg-str stmtend */
 yang_version_stmt
-: 'yang-version' string ';'                                 {}
+: 'yang-version' string ';'                                            { $$ = new Abs($1, new QName($2));}
 ;
 
 /*    yang-version-arg-str = < a string that matches the rule > < yang-version-arg > */
@@ -323,8 +323,8 @@ yang_version_stmt
 /*                              [revision-date-stmt] */
 /*                          "}" stmtsep */
 import_stmt
-: 'import' 'IDENTIFIER' '{' prefix_stmt '}'                           {}
-| 'import' 'IDENTIFIER' '{' prefix_stmt revision_date_stmt '}'        {}
+: 'import' 'IDENTIFIER' '{' prefix_stmt '}'                            { $$ = new Abs($1, new QName($2)); }
+| 'import' 'IDENTIFIER' '{' prefix_stmt revision_date_stmt '}'         { $$ = new Abs($1, new QName($2), [$4, $5]); }
 ;
 
 /*    include-stmt        = include-keyword sep identifier-arg-str optsep */
@@ -333,21 +333,21 @@ import_stmt
 /*                               [revision-date-stmt] */
 /*                           "}") stmtsep */
 include_stmt
-: 'include' 'IDENTIFIER' ';'                                           {}
-| 'include' 'IDENTIFIER' '{' '}'                                       {}
-| 'include' 'IDENTIFIER' '{' revision_date_stmt '}'                    {}
+: 'include' 'IDENTIFIER' ';'                                           { $$ = new Abs($1, new QName($2)); }
+| 'include' 'IDENTIFIER' '{' '}'                                       { $$ = new Abs($1, new QName($2)); }
+| 'include' 'IDENTIFIER' '{' revision_date_stmt '}'                    { $$ = new Abs($1, new QName($2), [$1]); }
 ;
 
 /*    namespace-stmt      = namespace-keyword sep uri-str stmtend */
 namespace_stmt
-: 'namespace' string ';'                                      {}
+: 'namespace' string ';'                                               { $$ = new Abs($1, new QName($2)); }
 ;
 
 /*    uri-str             = < a string that matches the rule > < URI in RFC 3986 > */
 
 /*    prefix-stmt         = prefix-keyword sep prefix-arg-str stmtend */
 prefix_stmt
-: 'prefix' 'IDENTIFIER' ';'                                            {}
+: 'prefix' 'IDENTIFIER' ';'                                            { $$ = new Abs($1, new QName($2)); }
 ;
 
 /*    belongs-to-stmt     = belongs-to-keyword sep identifier-arg-str optsep */
@@ -355,32 +355,32 @@ prefix_stmt
 /*                              prefix-stmt */
 /*                          "}" stmtsep */
 belongs_to_stmt
-: 'belongs-to' 'IDENTIFIER' '{' prefix_stmt '}'                        {}
+: 'belongs-to' 'IDENTIFIER' '{' prefix_stmt '}'                        { $$ = new Abs($1, new QName($2), [$4]);}
 ;
 
 /*    organization-stmt   = organization-keyword sep string stmtend */
 organization_stmt
-: 'organization' string ';'                                    {}
+: 'organization' string ';'                                            { $$ = new Abs($1, new QName($2)); }
 ;
 
 /*    contact-stmt        = contact-keyword sep string stmtend */
 contact_stmt
-: 'contact' string ';'                                         {}
+: 'contact' string ';'                                                 { $$ = new Abs($1, new QName($2)); }
 ;
 
 /*    description-stmt    = description-keyword sep string stmtend */
 description_stmt
-: 'description' string ';'                                     {}
+: 'description' string ';'                                             { $$ = new Abs($1, new QName($2)); }
 ;
 
 /*    reference-stmt      = reference-keyword sep string stmtend */
 reference_stmt
-: 'reference' string ';'                                       {}
+: 'reference' string ';'                                               { $$ = new Abs($1, new QName($2)); }
 ;
 
 /*    units-stmt          = units-keyword sep string stmtend */
 units_stmt
-: 'units' string ';'                                           {}
+: 'units' string ';'                                                   { $$ = new Abs($1, new QName($2)); }
 ;
 
 /*    revision-stmt       = revision-keyword sep revision-date optsep */
@@ -391,25 +391,25 @@ units_stmt
 /*                               [reference-stmt] */
 /*                           "}") stmtsep */
 revision_stmt
-: 'revision' 'DATE' ';'                                             {}
-| 'revision' 'DATE' '{' revision_body '}'                           {}
+: 'revision' 'DATE' ';'                                               { $$ = new Abs($1, new QName($2)); }
+| 'revision' 'DATE' '{' revision_body '}'                             { new Abs($1, new QName($2), $4); }
 ;
 
 revision_body
-: revision_body_stmt                                                {}
-| revision_body revision_body_stmt                                  {}
+: revision_body_stmt                                                  { $$ = [$1]; }
+| revision_body revision_body_stmt                                    { $$ = $1; $$.push($2); }
 ;
 
 revision_body_stmt
-: description_stmt                                                   { $$ = $1; }
-| reference_stmt                                                     { $$ = $1; }
-| unknown_stmt                                                       { $$ = $1; } 
+: description_stmt                                                    { $$ = $1; }
+| reference_stmt                                                      { $$ = $1; }
+| unknown_stmt                                                        { $$ = $1; } 
 ;
 
 /*    revision-date       = date-arg-str */
 /*    revision-date-stmt  = revision-date-keyword sep revision-date stmtend */
 revision_date_stmt
-: 'revision-date' 'DATE' ';'                                         {}
+: 'revision-date' 'DATE' ';'                                          { $$ = new Abs($1, new QName($2)); }
 ;
 
 /*    extension-stmt      = extension-keyword sep identifier-arg-str optsep */
@@ -422,13 +422,13 @@ revision_date_stmt
 /*                               [reference-stmt] */
 /*                           "}") stmtsep */
 extension_stmt
-: 'extension' 'IDENTIFIER' ';'                                       {}
-| 'extension' 'IDENTIFIER' '{' extension_stmt_body '}'               {}   
+: 'extension' 'IDENTIFIER' ';'                                        { $$ = new Abs($1, new QName($2)); }
+| 'extension' 'IDENTIFIER' '{' extension_stmt_body '}'                { $$ = new Abs($1, new QName($2), $4); }   
 ;
 
 extension_stmt_body
-: extension_stmt_body_stmt                                          {}
-| extension_stmt_body extension_stmt_body_stmt                      {}
+: extension_stmt_body_stmt                                            { $$ = [$1]; }
+| extension_stmt_body extension_stmt_body_stmt                        { $$ = $1; $4.push($2); }
 ;
 
 extension_stmt_body_stmt
@@ -445,7 +445,7 @@ extension_stmt_body_stmt
 /*                               [yin-element-stmt] */
 /*                           "}") stmtsep */
 argument_stmt
-: 'argument' 'IDENTIFIER' ';'                                        {}
+: 'argument' 'IDENTIFIER' ';'                                       { $$ = new Abs($1, new QName($2)); }
 ;
 
 /*    yin-element-stmt    = yin-element-keyword sep yin-element-arg-str */
@@ -455,8 +455,8 @@ argument_stmt
 
 /*    yin-element-arg     = true-keyword / false-keyword */
 true_false_arg
-: 'true'                                                         {}
-| 'false'                                                        {}
+: 'true'                                                           { $$ = true; }
+| 'false'                                                          { $$ = false; }
 ;
 
 /*    identity-stmt       = identity-keyword sep identifier-arg-str optsep */
@@ -470,14 +470,14 @@ true_false_arg
 /*                               [reference-stmt] */
 /*                           "}") stmtsep */
 identity_stmt
-: 'identity' 'IDENTIFIER' ';'                                       {}
-| 'identity' 'IDENTIFIER' '{' '}'                                   {}
-| 'identity' 'IDENTIFIER' '{' identity_stmt_body '}'                {}
+: 'identity' 'IDENTIFIER' ';'                                      { $$ = new Abs($1, new QName($2)); }
+| 'identity' 'IDENTIFIER' '{' '}'                                  { $$ = new Abs($1, new QName($2)); }
+| 'identity' 'IDENTIFIER' '{' identity_stmt_body '}'               { $$ = new Abs($1, new QName($2), $4);}
 ;
 
 identity_stmt_body
-: identity_stmt_body_stmt                                          {}
-| identity_stmt_body identity_stmt_body_stmt                       {}
+: identity_stmt_body_stmt                                          { $$ = [$1]; }
+| identity_stmt_body identity_stmt_body_stmt                       { $$ = $1; $$.push($2); }
 ;
 
 identity_stmt_body_stmt
@@ -485,12 +485,12 @@ identity_stmt_body_stmt
 | status_stmt                                                      { $$ = $1; }
 | description_stmt                                                 { $$ = $1; }
 | reference_stmt                                                   { $$ = $1; }
-| unknown_stmt                                                       { $$ = $1; } 
+| unknown_stmt                                                     { $$ = $1; } 
 ;
 
 /*    base-stmt           = base-keyword sep identifier-ref-arg-str stmtend */
 base_stmt
-: 'base' identifier_ref ';'                                          {}
+: 'base' identifier_ref ';'                                        { $$ = new Abs($1, $2); }
 ;
 
 /*    feature-stmt        = feature-keyword sep identifier-arg-str optsep */
@@ -503,27 +503,27 @@ base_stmt
 /*                               [reference-stmt] */
 /*                           "}") stmtsep */
 feature_stmt
-: 'feature' 'IDENTIFIER' ';'                                         {}
-| 'feature' 'IDENTIFIER' '{' '}'                                     {}
-| 'feature' 'IDENTIFIER' '{' feature_stmt_body '}'                   {}
+: 'feature' 'IDENTIFIER' ';'                                       { $$ = new Abs($1, new QName($2)); }
+| 'feature' 'IDENTIFIER' '{' '}'                                   { $$ = new Abs($1, new QName($2)); }
+| 'feature' 'IDENTIFIER' '{' feature_stmt_body '}'                 { $$ = new Abs($1, new QName($2), $4); }
 ;
 
 feature_stmt_body
-: feature_stmt_body_stmt                                            {}
-| feature_stmt_body feature_stmt_body_stmt                          {}
+: feature_stmt_body_stmt                                           { $$ = [$1]; }
+| feature_stmt_body feature_stmt_body_stmt                         { $$ = $1; $$.push($2); }
 ;
  
 feature_stmt_body_stmt
-: if_feature_stmt                                                   { $$ = $1; }
-| status_stmt                                                       { $$ = $1; }
-| description_stmt                                                  { $$ = $1; }
-| reference_stmt                                                    { $$ = $1; }
-| unknown_stmt                                                      { $$ = $1; } 
+: if_feature_stmt                                                  { $$ = $1; }
+| status_stmt                                                      { $$ = $1; }
+| description_stmt                                                 { $$ = $1; }
+| reference_stmt                                                   { $$ = $1; }
+| unknown_stmt                                                     { $$ = $1; } 
 ;
 
 /*    if-feature-stmt     = if-feature-keyword sep if-feature-expr-str stmtend */
 if_feature_stmt
-: 'if-feature' identifier_ref ';'                                  {} /* @todo implement complete grammar */
+: 'if-feature' identifier_ref ';'                                  { $$ = new Abs($1, $2); } /* @todo implement complete grammar */
 ;
 
 /*    if-feature-expr-str = < a string that matches the rule > < if-feature-expr > */
@@ -542,12 +542,12 @@ if_feature_stmt
 /*                              [reference-stmt] */
 /*                           "}" stmtsep */
 typedef_stmt
-: 'typedef' 'IDENTIFIER' '{' typedef_stmt_body '}'                   {}
+: 'typedef' 'IDENTIFIER' '{' typedef_stmt_body '}'                  { $$ = new Abs($1, new QName($2)); }
 ;
 
 typedef_stmt_body
-: typedef_stmt_body_stmt                                             {}
-| typedef_stmt_body typedef_stmt_body_stmt                           {}
+: typedef_stmt_body_stmt                                            { $$ = [$1]; }
+| typedef_stmt_body typedef_stmt_body_stmt                          { $$ = $1; $$.push($2); }
 ;
 
 typedef_stmt_body_stmt
@@ -566,9 +566,9 @@ typedef_stmt_body_stmt
 /*                               [type-body-stmts] */
 /*                           "}") stmtsep */
 type_stmt
-: 'type' identifier_ref ';'                                          {}
-| 'type' identifier_ref '{' '}'                                      {}
-| 'type' identifier_ref '{' type_body_stmts '}'                      {}
+: 'type' identifier_ref ';'                                          { $$ = new Abs($1, $2); }
+| 'type' identifier_ref '{' '}'                                      { $$ = new Abs($1, $2); }
+| 'type' identifier_ref '{' type_body_stmts '}'                      { $$ = new Abs($1, $2, $3); }
 ;
 
 /*    type-body-stmts     = numerical-restrictions / */
@@ -582,22 +582,22 @@ type_stmt
 /*                          union-specification / */
 /*                          binary-specification */
 type_body_stmts
-: type_body_stmt                                                      {} 
-| type_body_stmts type_body_stmt                                      {}
+: type_body_stmt                                                     { $$ = [$1]; } 
+| type_body_stmts type_body_stmt                                     { $$ = $1; $$.push($2); }
 ;
 
 type_body_stmt
-: range_stmt                                                          { $$ = $1; } /* numerical_restrictions, decimal64_specification */
-| fraction_digits_stmt                                                { $$ = $1; } /* decimal64_specification */
-| length_stmt                                                         { $$ = $1; } /* string_restrictions, binary-specification */
-| pattern_stmt                                                        { $$ = $1; } /* string_restrictions */
-| enum_specification                                                  { $$ = $1; }
-| path_stmt                                                           { $$ = $1; } /* leafref_specification */
-| require_instance_stmt                                               { $$ = $1; } /* leafref_specification, instance-identifier-specification */
-| base_stmt                                                           { $$ = $1; } /* identityref-specification */
-| bit_stmt                                                            { $$ = $1; } /* bits-specification */
-| type_stmt                                                           { $$ = $1; } /* union-specification */    
-| unknown_stmt                                                        { $$ = $1; } 
+: range_stmt                                                         { $$ = $1; } /* numerical_restrictions, decimal64_specification */
+| fraction_digits_stmt                                               { $$ = $1; } /* decimal64_specification */
+| length_stmt                                                        { $$ = $1; } /* string_restrictions, binary-specification */
+| pattern_stmt                                                       { $$ = $1; } /* string_restrictions */
+| enum_specification                                                 { $$ = $1; }
+| path_stmt                                                          { $$ = $1; } /* leafref_specification */
+| require_instance_stmt                                              { $$ = $1; } /* leafref_specification, instance-identifier-specification */
+| base_stmt                                                          { $$ = $1; } /* identityref-specification */
+| bit_stmt                                                           { $$ = $1; } /* bits-specification */
+| type_stmt                                                          { $$ = $1; } /* union-specification */    
+| unknown_stmt                                                       { $$ = $1; } 
 ;
 
 /*    numerical-restrictions = range-stmt */
@@ -612,7 +612,7 @@ type_body_stmt
 /*                               [reference-stmt] */
 /*                            "}") stmtsep */
 range_stmt
-: 'range' range_arg  ';'                                               {}
+: 'range' range_arg  ';'                                             {}
 ;                          
 
 /*    decimal64-specification = ;; these stmts can appear in any order */
@@ -954,13 +954,13 @@ grouping_stmt_body_stmt
 /*                               *notification-stmt */
 /*                           "}") stmtsep */
 container_stmt
-: 'container' 'IDENTIFIER' ';'                                           {}
-| 'container' 'IDENTIFIER' '{' container_stmt_body '}'                   {}
+: 'container' 'IDENTIFIER' ';'                                          { $$ = new Abs($1, new QName($2)); }
+| 'container' 'IDENTIFIER' '{' container_stmt_body '}'                  { $$ = new Abs($1, new QName($2), $4); }
 ;
 
 container_stmt_body
-: container_stmt_body_stmt                                              {}
-| container_stmt_body container_stmt_body_stmt                          {}
+: container_stmt_body_stmt                                              { $$ = [$1]; }
+| container_stmt_body container_stmt_body_stmt                          { $$ = $1; $$.push($2); }
 ;
 
 container_stmt_body_stmt
@@ -1003,12 +1003,12 @@ container_stmt_body_stmt
 /*                              [reference-stmt] */
 /*                           "}" stmtsep */
 leaf_stmt
-: 'leaf' 'IDENTIFIER' '{' leaf_stmt_body '}'                             {}
+: 'leaf' 'IDENTIFIER' '{' leaf_stmt_body '}'                            { $$ = new Abs($1, new QName($2), $4); }
 ;
 
 leaf_stmt_body
-: leaf_stmt_body_stmt                                                   {}
-| leaf_stmt_body leaf_stmt_body_stmt                                    {}
+: leaf_stmt_body_stmt                                                   { $$ = [$1];}
+| leaf_stmt_body leaf_stmt_body_stmt                                    { $$ = $1; $$.push($2); }
 ;
 
 leaf_stmt_body_stmt
@@ -1926,8 +1926,8 @@ node_identifier
 /*    identifier-ref-arg-str = < a string that matches the rule > < identifier-ref-arg > */
 /*    identifier-ref-arg  = identifier-ref */
 identifier_ref
-: 'IDENTIFIER'                            {}
-| 'IDENTIFIER' ':' 'IDENTIFIER'           {}
+: 'IDENTIFIER'                            { $$ = new QName($1); }
+| 'IDENTIFIER' ':' 'IDENTIFIER'           { $$ = new QName($2, $1); }
 ;
 
 /*    identifier-ref      = [prefix ":"] identifier */
@@ -2035,3 +2035,26 @@ quoted_string
 /*                          ; whitespace */
 
 %%
+
+function Abs(type, arg, body) {
+    this.type = type;
+    this.name = arg;
+    this.body = body;
+    if (typeof this.body === 'undefined') {
+        this.body = [];
+    }
+}
+
+function QName(name, prefix) {
+    this.prefix = prefix;
+    this.name = name;
+}
+
+QName.prototype.toString = function () {
+    let result = "";
+    if (typeof this.prefix !== 'undefined') {
+        result += `${this.prefix}:`;
+    }
+    result += this.name;
+    return result;
+}

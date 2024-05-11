@@ -4,4 +4,9 @@ module test-container {
             type string;
         }
     }
+    container B {
+        leaf b {
+            type string;
+        }
+    }
 }
