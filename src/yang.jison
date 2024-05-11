@@ -180,7 +180,7 @@ top_stmt
 /*                              body-stmts */
 /*                          "}" optsep */
 module_stmt
-: 'module' 'IDENTIFIER' '{' module_body_stmts '}'                    { $$ = new Abs($1, new QName($2), $4); }
+: 'module' 'IDENTIFIER' '{' module_body_stmts '}'                    { $$ = new Abs($1, $2, $4); }
 ;
 
 module_body_stmts
@@ -311,7 +311,7 @@ submodule_body_stmt
 
 /*    yang-version-stmt   = yang-version-keyword sep yang-version-arg-str stmtend */
 yang_version_stmt
-: 'yang-version' string ';'                                            { $$ = new Abs($1, new QName($2));}
+: 'yang-version' string ';'                                            { $$ = new Abs($1, $2);}
 ;
 
 /*    yang-version-arg-str = < a string that matches the rule > < yang-version-arg > */
@@ -612,7 +612,7 @@ type_body_stmt
 /*                               [reference-stmt] */
 /*                            "}") stmtsep */
 range_stmt
-: 'range' range_arg  ';'                                             { $$ = $$ = new Abs($1, $2); }
+: 'range' range_arg  ';'                                             { $$ = new Abs($1, $2); }
 ;                          
 
 /*    decimal64-specification = ;; these stmts can appear in any order */
@@ -621,7 +621,7 @@ range_stmt
 
 /*    fraction-digits-stmt = fraction-digits-keyword sep fraction-digits-arg-str stmtend */
 fraction_digits_stmt
-: 'fraction-digits' 'INTEGER' ';'                                       {} 
+: 'fraction-digits' 'INTEGER' ';'                                    { $$ =  new Abs($1, $1); } 
 ;
 /*    fraction-digits-arg-str = < a string that matches the rule > < fraction-digits-arg > */
 /*    fraction-digits-arg = ("1" ["0" / "1" / "2" / "3" / "4" / "5" / "6" / "7" / "8"]) / "2" / "3" / "4" / "5" / "6" / "7" / "8" / "9" */
@@ -640,13 +640,13 @@ fraction_digits_stmt
 /*                               [reference-stmt] */
 /*                            "}") stmtsep */
 length_stmt
-: 'length' length_arg ';'                                             {}
-| 'length' length_arg '{' length_body_stmts '}'                       {}
+: 'length' length_arg ';'                                             { $$ = new Abs($1, $2); }
+| 'length' length_arg '{' length_body_stmts '}'                       { $$ = new Abs($1, $2, $4); }
 ;
 
 length_body_stmts
-: length_body_stmt                                                    {}
-| length_body_stmts length_body_stmt                                  {}
+: length_body_stmt                                                    { $$ = [$1]; }
+| length_body_stmts length_body_stmt                                  { $$ = $1; $$.push($2); }
 ;
 
 length_body_stmt
@@ -668,13 +668,13 @@ length_body_stmt
 /*                               [reference-stmt] */
 /*                            "}") stmtsep */
 pattern_stmt
-: 'pattern' string ';'                                                {}
-| 'pattern' string '{' pattern_stmt_body '}' ';'                      {}
+: 'pattern' string ';'                                                { $$ = new Abs($1, $2);}
+| 'pattern' string '{' pattern_stmt_body '}' ';'                      { $$ = new Abs($1, $2, $4);}
 ;
 
 pattern_stmt_body
-: pattern_stmt_body_stmt                                              {}
-| pattern_stmt_body pattern_stmt_body_stmt                            {}
+: pattern_stmt_body_stmt                                              { $$ = [$1];}
+| pattern_stmt_body pattern_stmt_body_stmt                            { $$ = $1; $$.push($2); }
 ;
 
 pattern_stmt_body_stmt
@@ -690,11 +690,11 @@ pattern_stmt_body_stmt
 /*    modifier-arg-str    = < a string that matches the rule > < modifier-arg > */
 /*    modifier-arg        = invert-match-keyword */
 modifier_stmt
-: 'modifier' 'invert-match'                                         {}
+: 'modifier' 'invert-match'                                           { $$ = new Abs($1, $2); }
 ;
 /*    default-stmt        = default-keyword sep string stmtend */
 default_stmt
-: 'default' string ';'                                        {}
+: 'default' string ';'                                                { $$ = new Abs($1, $2); }
 ;
 
 /*    enum-specification  = 1*enum-stmt */
@@ -709,22 +709,22 @@ default_stmt
 /*                               [reference-stmt] */
 /*                            "}") stmtsep */
 enum_specification
-: 'enum' string ';'                                     {}
-| 'enum' string '{' enum_specification_body '}'          {}
+: 'enum' string ';'                                                  { $$ = new Abs($1, $2); }
+| 'enum' string '{' enum_specification_body '}'                      { $$ = new Abs($1, $2, $4);}
 ;
 
 enum_specification_body
-: enum_specification_body_stmt                            {}
-| enum_specification_body enum_specification_body_stmt    {}
+: enum_specification_body_stmt                                       { $$ = [$1]; }
+| enum_specification_body enum_specification_body_stmt               { $$ = $1; $$.push($2); }
 ;
 
 enum_specification_body_stmt
-: if_feature_stmt                                         { $$ = $1; }
-| value_stmt                                              { $$ = $1; }
-| status_stmt                                             { $$ = $1; }
-| description_stmt                                        { $$ = $1; }
-| reference_stmt                                          { $$ = $1; }
-| unknown_stmt                                            { $$ = $1; } 
+: if_feature_stmt                                                    { $$ = $1; }
+| value_stmt                                                         { $$ = $1; }
+| status_stmt                                                        { $$ = $1; }
+| description_stmt                                                   { $$ = $1; }
+| reference_stmt                                                     { $$ = $1; }
+| unknown_stmt                                                       { $$ = $1; } 
 ;
 
 /*    leafref-specification = */
@@ -734,12 +734,12 @@ enum_specification_body_stmt
 
 /*    path-stmt           = path-keyword sep path-arg-str stmtend */
 path_stmt
-: 'path' string                                               {}
+: 'path' string ';'                                                  { $$ = new Abs($1, $2); }
 ;
 
 /*    require-instance-stmt = require-instance-keyword sep require-instance-arg-str stmtend */
 require_instance_stmt
-: 'require-instance' true_false_arg                            {}
+: 'require-instance' true_false_arg ';'                             { $$ = new Abs($1, $2); }
 ;
 
 /*    require-instance-arg-str = < a string that matches the rule > < require-instance-arg > */
@@ -765,34 +765,34 @@ require_instance_stmt
 /*                               [reference-stmt] */
 /*                           "}") stmtsep */
 bit_stmt
-: 'bit' 'IDENTIFIER' ';'                                               {}
-| 'bit' 'IDENTIFIER' '{' bit_body '}'                                   {}
+: 'bit' 'IDENTIFIER' ';'                                            { $$ = new Abs($1, $2); }
+| 'bit' 'IDENTIFIER' '{' bit_body '}'                               { $$ = new Abs($1, $2, $4); }
 ;
 
 bit_body
-: bit_body_stmt                                                       {}
-| bit_body bit_body_stmt                                              {}
+: bit_body_stmt                                                     { $$ = [$1]; }
+| bit_body bit_body_stmt                                            { $$ = $1; $$.push($1); }
 ;
 
 bit_body_stmt
-: if_feature_stmt                                                     { $$ = $1; }
-| position_stmt                                                       { $$ = $1; }
-| status_stmt                                                         { $$ = $1; }
-| description_stmt                                                    { $$ = $1; }
-| reference_stmt                                                      { $$ = $1; }
-| unknown_stmt                                                        { $$ = $1; } 
+: if_feature_stmt                                                   { $$ = $1; }
+| position_stmt                                                     { $$ = $1; }
+| status_stmt                                                       { $$ = $1; }
+| description_stmt                                                  { $$ = $1; }
+| reference_stmt                                                    { $$ = $1; }
+| unknown_stmt                                                      { $$ = $1; } 
 ;
 
 /*    position-stmt       = position-keyword sep position-value-arg-str stmtend */
 position_stmt
-: 'position' 'INTEGER' ';'                                              {}
+: 'position' 'INTEGER' ';'                                          { $$ = new Abs($1, $2); }
 ;
 /*    position-value-arg-str = < a string that matches the rule > < position-value-arg > */
 /*    position-value-arg  = non-negative-integer-value */
 
 /*    status-stmt         = status-keyword sep status-arg-str stmtend */
 status_stmt
-: 'status' status_arg ';'                                           {}
+: 'status' status_arg ';'                                           { $$ = new Abs($1, $2); }
 ;
 
 /*    status-arg-str      = < a string that matches the rule > */
@@ -802,14 +802,14 @@ status_stmt
 /*                          obsolete-keyword / */
 /*                          deprecated-keyword */
 status_arg
-: 'current'                                                         {} /* @todo these should be enums */
-| 'obsolete'                                                        {}
-| 'deprecated'                                                      {}
+: 'current'                                                         { $$ = $1; }
+| 'obsolete'                                                        { $$ = $1; }
+| 'deprecated'                                                      { $$ = $1; }
 ;
 
 /*    config-stmt         = config-keyword sep config-arg-str stmtend */
 config_stmt
-: 'config' true_false_arg ';'                                           {}
+: 'config' true_false_arg ';'                                       { $$ = new Abs($1, $2); }
 ;                                                
 
 /*    config-arg-str      = < a string that matches the rule > < config-arg > */
@@ -817,7 +817,7 @@ config_stmt
 
 /*    mandatory-stmt      = mandatory-keyword sep mandatory-arg-str stmtend */
 mandatory_stmt
-: 'mandatory' true_false_arg ';'                                         {}
+: 'mandatory' true_false_arg ';'                                    { $$ = new Abs($1, $2); }
 ;
 
 /*    mandatory-arg-str   = < a string that matches the rule > < mandatory-arg > */
@@ -825,15 +825,15 @@ mandatory_stmt
 
 /*    presence-stmt       = presence-keyword sep string stmtend */
 presence_stmt
-: 'presence' string ';'                                           {}
+: 'presence' string ';'                                             { $$ = new Abs($1, $2); }
 ;
 
 /*    ordered-by-stmt     = ordered-by-keyword sep ordered-by-arg-str stmtend */
 /*    ordered-by-arg-str  = < a string that matches the rule > < ordered-by-arg > */
 /*    ordered-by-arg      = user-keyword / system-keyword */
 ordered_by_stmt
-: 'ordered-by' 'user' ';'                                                {}
-| 'ordered-by' 'system' ';'                                             {}
+: 'ordered-by' 'user' ';'                                           { $$ = new Abs($1, $2); }
+| 'ordered-by' 'system' ';'                                         { $$ = new Abs($1, $2); }
 ;
 
 /*    must-stmt           = must-keyword sep string optsep */
@@ -846,13 +846,13 @@ ordered_by_stmt
 /*                               [reference-stmt] */
 /*                            "}") stmtsep */
 must_stmt
-: 'must' string ';'                                              {}
-| 'must' string '{' must_stmt_body '}'                            {}
+: 'must' string ';'                                                 { $$ = new Abs($1, $2); }
+| 'must' string '{' must_stmt_body '}'                              { $$ = new Abs($1, $2, $4);}
 ;
 
 must_stmt_body
-: must_stmt_body_stmt                                               {}
-| must_stmt_body must_stmt_body_stmt                                {}
+: must_stmt_body_stmt                                               { $$ = [$1]; }
+| must_stmt_body must_stmt_body_stmt                                { $$ = $1; $$.push($2) }
 ;
 
 must_stmt_body_stmt
@@ -860,24 +860,24 @@ must_stmt_body_stmt
 | error_app_tag_stmt                                                { $$ = $1; }
 | description_stmt                                                  { $$ = $1; }
 | reference_stmt                                                    { $$ = $1; }
-| unknown_stmt                                                       { $$ = $1; } 
+| unknown_stmt                                                      { $$ = $1; } 
 ;
 
 /*    error-message-stmt  = error-message-keyword sep string stmtend */
 error_message_stmt
-: 'error_message' string ';'                                  {}
+: 'error_message' string ';'                                        { $$ = new Abs($1, $2); }
 ;
 
 /*    error-app-tag-stmt  = error-app-tag-keyword sep string stmtend */
 error_app_tag_stmt
-: 'error-app-tag' string ';'                                  {}
+: 'error-app-tag' string ';'                                        { $$ = new Abs($1, $2); }
 ;
 
 /*    min-elements-stmt   = min-elements-keyword sep min-value-arg-str stmtend */
 /*    min-value-arg-str   = < a string that matches the rule > < min-value-arg > */
 /*    min-value-arg       = non-negative-integer-value */
 min_elements_stmt
-: 'min-elements' 'INTEGER' ';'                                 {} /* @todo check non negative int */
+: 'min-elements' 'INTEGER' ';'                                      { $$ = new Abs($1, $2); } /* @todo check non negative int */
 ;
 
 
@@ -885,12 +885,12 @@ min_elements_stmt
 /*    max-value-arg-str   = < a string that matches the rule > < max-value-arg > */
 /*    max-value-arg       = unbounded-keyword / positive-integer-value */
 max_elements_stmt
-: 'max-elements' 'INTEGER' ';'                                 {} /* @todo check non negative int and add unbounded keyword */
+: 'max-elements' 'INTEGER' ';'                                      { $$ = new Abs($1, $2); } /* @todo check non negative int and add unbounded keyword */
 ;
 
 /*    value-stmt          = value-keyword sep integer-value-str stmtend */
 value_stmt
-: 'VALUE' 'INTEGER' ';'                                        {}
+: 'VALUE' 'INTEGER' ';'                                             { $$ = new Abs($1, $2); }
 ;
 
 /*    integer-value-str   = < a string that matches the rule > < integer-value > */
@@ -908,13 +908,13 @@ value_stmt
 /*                               *notification-stmt */
 /*                           "}") stmtsep */
 grouping_stmt
-: 'grouping' 'IDENTIFIER' ';'                                          {}
-| 'grouping' 'IDENTIFIER' '{' grouping_stmt_body '}'                   {}
+: 'grouping' 'IDENTIFIER' ';'                                       { $$ = new Abs($1, $2); }
+| 'grouping' 'IDENTIFIER' '{' grouping_stmt_body '}'                { $$ = new Abs($1, $2, $3); }
 ;
 
 grouping_stmt_body
-: grouping_stmt_body_stmt                                             {}
-| grouping_stmt_body grouping_stmt_body_stmt                          {}
+: grouping_stmt_body_stmt                                           { $$ = [$1]; }
+| grouping_stmt_body grouping_stmt_body_stmt                        { $$ = $1; $$.push($1); }
 ;
 
 grouping_stmt_body_stmt
@@ -1044,29 +1044,29 @@ leaf_stmt_body_stmt
 /*                              [reference-stmt] */
 /*                           "}" stmtsep */
 leaf_list_stmt
-: 'leaf-list' 'IDENTIFIER' '{' leaf_list_stmt_body '}'                   {}
+: 'leaf-list' 'IDENTIFIER' '{' leaf_list_stmt_body '}'                  { $$ = new Abs($1, $2, $4); }
 ;
 
 leaf_list_stmt_body
-: leaf_list_stmt_body_stmt                                               {}
-| leaf_list_stmt_body leaf_list_stmt_body_stmt                           {}
+: leaf_list_stmt_body_stmt                                              { $$ = [$1]; }
+| leaf_list_stmt_body leaf_list_stmt_body_stmt                          { $$ = $1; $$.push($2); }
 ;
 
 leaf_list_stmt_body_stmt
-: when_stmt                                                              { $$ = $1; }
-| if_feature_stmt                                                        { $$ = $1; }
-| type_stmt                                                              { $$ = $1; }
-| units_stmt                                                             { $$ = $1; }
-| must_stmt                                                              { $$ = $1; }
-| default_stmt                                                           { $$ = $1; }
-| config_stmt                                                            { $$ = $1; }
-| min_elements_stmt                                                      { $$ = $1; }
-| max_elements_stmt                                                      { $$ = $1; }
-| ordered_by_stmt                                                        { $$ = $1; }
-| status_stmt                                                            { $$ = $1; }
-| description_stmt                                                       { $$ = $1; }
-| reference_stmt                                                         { $$ = $1; }
-| unknown_stmt                                                           { $$ = $1; } 
+: when_stmt                                                             { $$ = $1; }
+| if_feature_stmt                                                       { $$ = $1; }
+| type_stmt                                                             { $$ = $1; }
+| units_stmt                                                            { $$ = $1; }
+| must_stmt                                                             { $$ = $1; }
+| default_stmt                                                          { $$ = $1; }
+| config_stmt                                                           { $$ = $1; }
+| min_elements_stmt                                                     { $$ = $1; }
+| max_elements_stmt                                                     { $$ = $1; }
+| ordered_by_stmt                                                       { $$ = $1; }
+| status_stmt                                                           { $$ = $1; }
+| description_stmt                                                      { $$ = $1; }
+| reference_stmt                                                        { $$ = $1; }
+| unknown_stmt                                                          { $$ = $1; } 
 ;
 
 /*    list-stmt           = list-keyword sep identifier-arg-str optsep */
@@ -1090,64 +1090,64 @@ leaf_list_stmt_body_stmt
 /*                              *notification-stmt */
 /*                           "}" stmtsep */
 list_stmt
-: 'list' 'IDENTIFIER' '{' list_stmt_body '}'                               {}
+: 'list' 'IDENTIFIER' '{' list_stmt_body '}'                            { $$ = new Abs($1, $2, $4);}
 ;
 
 list_stmt_body
-: list_stmt_body_stmt                                                     {}
-| list_stmt_body list_stmt_body_stmt                                      {}
+: list_stmt_body_stmt                                                   { $$ = [$1]; }
+| list_stmt_body list_stmt_body_stmt                                    { $$ = $1; $$.push($2); }
 ;
 
 list_stmt_body_stmt
-: when_stmt                                                               { $$ = $1; }
-| if_feature_stmt                                                         { $$ = $1; }
-| must_stmt                                                               { $$ = $1; }
-| key_stmt                                                                { $$ = $1; }
-| unique_stmt                                                             { $$ = $1; }
-| config_stmt                                                             { $$ = $1; }
-| min_elements_stmt                                                       { $$ = $1; }
-| max_elements_stmt                                                       { $$ = $1; }
-| ordered_by_stmt                                                         { $$ = $1; }
-| status_stmt                                                             { $$ = $1; }
-| description_stmt                                                        { $$ = $1; }
-| reference_stmt                                                          { $$ = $1; }
-| typedef_stmt                                                            { $$ = $1; }
-| grouping_stmt                                                           { $$ = $1; }
-| container_stmt                                                          { $$ = $1; } /* data-def-stmt */
-| leaf_stmt                                                               { $$ = $1; }
-| leaf_list_stmt                                                           { $$ = $1; }
-| list_stmt                                                                { $$ = $1; }
-| anydata_stmt                                                             { $$ = $1; }
-| anyxml_stmt                                                              { $$ = $1; }
-| choice_stmt                                                              { $$ = $1; }
-| uses_stmt                                                                { $$ = $1; }
-| action_stmt                                                              { $$ = $1; }
-| notification_stmt                                                        { $$ = $1; }
-| unknown_stmt                                                             { $$ = $1; } 
+: when_stmt                                                             { $$ = $1; }
+| if_feature_stmt                                                       { $$ = $1; }
+| must_stmt                                                             { $$ = $1; }
+| key_stmt                                                              { $$ = $1; }
+| unique_stmt                                                           { $$ = $1; }
+| config_stmt                                                           { $$ = $1; }
+| min_elements_stmt                                                     { $$ = $1; }
+| max_elements_stmt                                                     { $$ = $1; }
+| ordered_by_stmt                                                       { $$ = $1; }
+| status_stmt                                                           { $$ = $1; }
+| description_stmt                                                      { $$ = $1; }
+| reference_stmt                                                        { $$ = $1; }
+| typedef_stmt                                                          { $$ = $1; }
+| grouping_stmt                                                         { $$ = $1; }
+| container_stmt                                                        { $$ = $1; } /* data-def-stmt */
+| leaf_stmt                                                             { $$ = $1; }
+| leaf_list_stmt                                                        { $$ = $1; }
+| list_stmt                                                             { $$ = $1; }
+| anydata_stmt                                                          { $$ = $1; }
+| anyxml_stmt                                                           { $$ = $1; }
+| choice_stmt                                                           { $$ = $1; }
+| uses_stmt                                                             { $$ = $1; }
+| action_stmt                                                           { $$ = $1; }
+| notification_stmt                                                     { $$ = $1; }
+| unknown_stmt                                                          { $$ = $1; } 
 ;
 
 /*    key-stmt            = key-keyword sep key-arg-str stmtend */
 key_stmt
-: 'key' key_arg ';'                                {}
+: 'key' key_arg ';'                                                     { $$ = new Abs($1, $2); }
 ;
 
 /*    key-arg-str         = < a string that matches the rule > < key-arg > */
 /*    key-arg             = node-identifier *(sep node-identifier) */
 key_arg
-: node_identifier                               {}
-| key_arg node_identifier                       {}
+: node_identifier                                                       { $$ = [$1]; }
+| key_arg node_identifier                                               { $$ = $1; $$.push($2); }
 ;
 
 /*    unique-stmt         = unique-keyword sep unique-arg-str stmtend */
 /*    unique-arg-str      = < a string that matches the rule > < unique-arg > */
 /*    unique-arg          = descendant-schema-nodeid *(sep descendant-schema-nodeid) */
 unique_stmt
-: 'unique' unique_arg ';'                         {}
+: 'unique' unique_arg ';'                         { $$ = new Abs($1, new DescendantSchemaNodeId($2)); }
 ; 
 
 unique_arg
-: descendant_schema_nodeid                        {}
-| unique_arg descendant_schema_nodeid             {}
+: descendant_schema_nodeid                        { $$ = [$1]}
+| unique_arg descendant_schema_nodeid             { $$ = $1; $$.push($2); }
 ;                                                                    
 
 /*    choice-stmt         = choice-keyword sep identifier-arg-str optsep */
@@ -1165,33 +1165,33 @@ unique_arg
 /*                               *(short-case-stmt / case-stmt) */
 /*                           "}") stmtsep */
 choice_stmt
-: 'choice' 'IDENTIFIER' ';'                      {}
-| 'choice' 'IDENTIFIER' '{' choice_body '}'      {}
+: 'choice' 'IDENTIFIER' ';'                       { $$ = new Abs($1, $2); }
+| 'choice' 'IDENTIFIER' '{' choice_body '}'       { $$ = new Abs($1, $2, $4); }
 ;
 
 choice_body
-: choice_body_stmt                              {}
-| choice_body choice_body_stmt                  {}
+: choice_body_stmt                                { $$ = [$1]; }
+| choice_body choice_body_stmt                    { $$ = $1; $$.push($2); }
 ;
 
 choice_body_stmt
-: when_stmt                                     { $$ = $1; }
-| if_feature_stmt                               { $$ = $1; }
-| default_stmt                                  { $$ = $1; }
-| config_stmt                                   { $$ = $1; }
-| mandatory_stmt                                { $$ = $1; }
-| status_stmt                                   { $$ = $1; }
-| description_stmt                              { $$ = $1; }
-| reference_stmt                                { $$ = $1; }
-| choice_stmt                                   { $$ = $1; } /* short-case-stmt */
-| container_stmt                                { $$ = $1; }
-| leaf_stmt                                     { $$ = $1; }
-| leaf_list_stmt                                { $$ = $1; }
-| list_stmt                                     { $$ = $1; }
-| anydata_stmt                                  { $$ = $1; }
-| anyxml_stmt                                   { $$ = $1; }
-| case_stmt                                     { $$ = $1; }
-| unknown_stmt                                  { $$ = $1; } 
+: when_stmt                                       { $$ = $1; }
+| if_feature_stmt                                 { $$ = $1; }
+| default_stmt                                    { $$ = $1; }
+| config_stmt                                     { $$ = $1; }
+| mandatory_stmt                                  { $$ = $1; }
+| status_stmt                                     { $$ = $1; }
+| description_stmt                                { $$ = $1; }
+| reference_stmt                                  { $$ = $1; }
+| choice_stmt                                     { $$ = $1; } /* short-case-stmt */
+| container_stmt                                  { $$ = $1; }
+| leaf_stmt                                       { $$ = $1; }
+| leaf_list_stmt                                  { $$ = $1; }
+| list_stmt                                       { $$ = $1; }
+| anydata_stmt                                    { $$ = $1; }
+| anyxml_stmt                                     { $$ = $1; }
+| case_stmt                                       { $$ = $1; }
+| unknown_stmt                                    { $$ = $1; } 
 ;
 
 /*    short-case-stmt     = choice-stmt / */
@@ -1214,29 +1214,29 @@ choice_body_stmt
 /*                               *data-def-stmt */
 /*                           "}") stmtsep */
 case_stmt
-: 'case' 'IDENTIFIER' ';'                          {}
-| 'case' 'IDENTIFIER' '{' case_stmt_body '}'       {}
+: 'case' 'IDENTIFIER' ';'                          { $$ = new Abs($1, $2); }
+| 'case' 'IDENTIFIER' '{' case_stmt_body '}'       { $$ = new Abs($1, $2, $4); }
 ;
 
 case_stmt_body
-: case_stmt_body_stmt                             {}
-| case_stmt_body case_stmt_body_stmt              {}
+: case_stmt_body_stmt                              { $$ = [$1]; }
+| case_stmt_body case_stmt_body_stmt               { $$ = $1;  $$.push($2); }
 ;
 
 case_stmt_body_stmt
-: when_stmt                                       { $$ = $1; }
-| if_feature_stmt                                 { $$ = $1; }
-| status_stmt                                     { $$ = $1; }
-| description_stmt                                { $$ = $1; }
-| reference_stmt                                  { $$ = $1; }
-| choice_stmt                                     { $$ = $1; } /* data-def-stmt */
-| container_stmt                                  { $$ = $1; }
-| leaf_stmt                                       { $$ = $1; }
-| leaf_list_stmt                                  { $$ = $1; }
-| list_stmt                                       { $$ = $1; }
-| anydata_stmt                                    { $$ = $1; }
-| anyxml_stmt                                     { $$ = $1; }
-| unknown_stmt                                    { $$ = $1; } 
+: when_stmt                                        { $$ = $1; }
+| if_feature_stmt                                  { $$ = $1; }
+| status_stmt                                      { $$ = $1; }
+| description_stmt                                 { $$ = $1; }
+| reference_stmt                                   { $$ = $1; }
+| choice_stmt                                      { $$ = $1; } /* data-def-stmt */
+| container_stmt                                   { $$ = $1; }
+| leaf_stmt                                        { $$ = $1; }
+| leaf_list_stmt                                   { $$ = $1; }
+| list_stmt                                        { $$ = $1; }
+| anydata_stmt                                     { $$ = $1; }
+| anyxml_stmt                                      { $$ = $1; }
+| unknown_stmt                                     { $$ = $1; } 
 ;
 
 /*    anydata-stmt        = anydata-keyword sep identifier-arg-str optsep */
@@ -1253,13 +1253,13 @@ case_stmt_body_stmt
 /*                               [reference-stmt] */
 /*                            "}") stmtsep */
 anydata_stmt
-: 'anydata' 'IDENTIFIER' ';'                               {}
-| 'anydata' 'IDENTIFIER' '{' anydata_anyxml_stmt_body '}'  {}
+: 'anydata' 'IDENTIFIER' ';'                               { $$ = new Abs($1, $2); }
+| 'anydata' 'IDENTIFIER' '{' anydata_anyxml_stmt_body '}'  { $$ = new Abs($1, $2, $4); }
 ;
 
 anydata_anyxml_stmt_body
-: anydata_anyxml_stmt_body_stmt                           {}
-| anydata_anyxml_stmt_body anydata_anyxml_stmt_body_stmt  {}
+: anydata_anyxml_stmt_body_stmt                           { $$ = [$1]; }
+| anydata_anyxml_stmt_body anydata_anyxml_stmt_body_stmt  { $$ = $1; $$.push($2); }
 ;
 
 anydata_anyxml_stmt_body_stmt
@@ -1288,8 +1288,8 @@ anydata_anyxml_stmt_body_stmt
 /*                               [reference-stmt] */
 /*                            "}") stmtsep */
 anyxml_stmt
-: 'anyxml' 'IDENTIFIER' ';'                               {}
-| 'anyxml' 'IDENTIFIER' '{' anydata_anyxml_stmt_body '}'  {}
+: 'anyxml' 'IDENTIFIER' ';'                               { $$ = new Abs($1, $2); }
+| 'anyxml' 'IDENTIFIER' '{' anydata_anyxml_stmt_body '}'  { $$ = new Abs($1, $2, $4); }
 ;
 
 /*    uses-stmt           = uses-keyword sep identifier-ref-arg-str optsep */
@@ -1305,24 +1305,24 @@ anyxml_stmt
 /*                               *uses-augment-stmt */
 /*                           "}") stmtsep */
 uses_stmt
-: 'uses' identifier_ref ';'                    {}
-| 'uses' identifier_ref '{' uses_stmt_body '}' {}
+: 'uses' identifier_ref ';'                               { $$ = new Abs($1, $2); }
+| 'uses' identifier_ref '{' uses_stmt_body '}'            { $$ = new Abs($1, $2, $4); }
 ;
 
 uses_stmt_body
-: uses_stmt_body_stmt                           {}
-| uses_stmt_body uses_stmt_body_stmt            {}
+: uses_stmt_body_stmt                                     { $$ = [$1]; }
+| uses_stmt_body uses_stmt_body_stmt                      { $$ = $1; $$.push($2); }
 ;
 
 uses_stmt_body_stmt
-: when_stmt                                     { $$ = $1; }
-| if_feature_stmt                               { $$ = $1; }
-| status_stmt                                   { $$ = $1; }
-| description_stmt                              { $$ = $1; }
-| reference_stmt                                { $$ = $1; }
+: when_stmt                                               { $$ = $1; }
+| if_feature_stmt                                         { $$ = $1; }
+| status_stmt                                             { $$ = $1; }
+| description_stmt                                        { $$ = $1; }
+| reference_stmt                                          { $$ = $1; }
 /* | refine_stmt */
 /* | uses_augment_stmt */
-| unknown_stmt                                  { $$ = $1; } 
+| unknown_stmt                                            { $$ = $1; } 
 ;
 
 /*    refine-stmt         = refine-keyword sep refine-arg-str optsep */
@@ -1374,12 +1374,12 @@ uses_stmt_body_stmt
 /*                                 action-stmt / notification-stmt) */
 /*                           "}" stmtsep */
 augment_stmt
-: 'AUGMENT' absolute_schema_nodeid '{' augment_body '}'        {}
+: 'AUGMENT' absolute_schema_nodeid '{' augment_body '}'        { $$ = new Abs($1, new AbsoluteSchemaNodeId($2), $4);}
 ;
 
 augment_body
-: augment_body_stmt                                            {}
-| augment_body augment_body_stmt                               {}
+: augment_body_stmt                                            { $$ = [$1]; }
+| augment_body augment_body_stmt                               { $$ = $1; $$.push($2); }
 ;
 
 augment_body_stmt
@@ -1416,19 +1416,19 @@ augment_body_stmt
 /*                               [reference-stmt] */
 /*                            "}") stmtsep */
 when_stmt
-: 'when' string ';'                      {}
-| 'when' string '{' when_stmt_body '}'   {}
+: 'when' string ';'                                            { $$ = new Abs($1, $2);}
+| 'when' string '{' when_stmt_body '}'                         { $$ = new Abs($1, $2, $4); }
 ;
 
 when_stmt_body
-: when_stmt_body_stmt                           {}
-| when_stmt_body when_stmt_body_stmt            {}
+: when_stmt_body_stmt                                          { $$ = [$1]; }
+| when_stmt_body when_stmt_body_stmt                           { $$ = $1; $$.push($2); }
 ;
 
 when_stmt_body_stmt
-: description_stmt                              { $$ = $1; }
-| reference_stmt                                { $$ = $1; }
-| unknown_stmt                                  { $$ = $1; } 
+: description_stmt                                             { $$ = $1; }
+| reference_stmt                                               { $$ = $1; }
+| unknown_stmt                                                 { $$ = $1; } 
 ;
 
 /*    rpc-stmt            = rpc-keyword sep identifier-arg-str optsep */
@@ -1444,25 +1444,25 @@ when_stmt_body_stmt
 /*                               [output-stmt] */
 /*                           "}") stmtsep */
 rpc_stmt
-: 'rpc' 'IDENTIFIER' ';'                           {}
-| 'rpc' 'IDENTIFIER' '{' rpc_action_stmt_body '}'  {}
+: 'rpc' 'IDENTIFIER' ';'                                       { $$ = new Abs($1, $2); }
+| 'rpc' 'IDENTIFIER' '{' rpc_action_stmt_body '}'              { $$ = new Abs($1, $2, $4); }
 ;
 
 rpc_action_stmt_body
-: rpc_action_stmt_body_stmt                       {}
-| rpc_action_stmt_body rpc_action_stmt_body_stmt  {}
+: rpc_action_stmt_body_stmt                                    { $$ = [$1]; }
+| rpc_action_stmt_body rpc_action_stmt_body_stmt               { $$ = $1; $$.push($2); }
 ;
 
 rpc_action_stmt_body_stmt
-: if_feature_stmt                                 { $$ = $1; }
-| status_stmt                                     { $$ = $1; }
-| description_stmt                                { $$ = $1; }
-| reference_stmt                                  { $$ = $1; }
-| typedef_stmt                                    { $$ = $1; }
-| grouping_stmt                                   { $$ = $1; }
-| input_stmt                                      { $$ = $1; }
-| output_stmt                                     { $$ = $1; }
-| unknown_stmt                                    { $$ = $1; } 
+: if_feature_stmt                                              { $$ = $1; }
+| status_stmt                                                  { $$ = $1; }
+| description_stmt                                             { $$ = $1; }
+| reference_stmt                                               { $$ = $1; }
+| typedef_stmt                                                 { $$ = $1; }
+| grouping_stmt                                                { $$ = $1; }
+| input_stmt                                                   { $$ = $1; }
+| output_stmt                                                  { $$ = $1; }
+| unknown_stmt                                                 { $$ = $1; } 
 ;
 
 /*    action-stmt         = action-keyword sep identifier-arg-str optsep */
@@ -1479,8 +1479,8 @@ rpc_action_stmt_body_stmt
 /*                           "}") stmtsep */
 
 action_stmt
-: 'action' 'IDENTIFIER' ';'                              {}
-| 'action' 'IDENTIFIER' '{' rpc_action_stmt_body '}'    {}
+: 'action' 'IDENTIFIER' ';'                                    { $$ = new Abs($1, $2); }
+| 'action' 'IDENTIFIER' '{' rpc_action_stmt_body '}'           { $$ = new Abs($1, $2, $4); }
 ;
 
 
@@ -1492,27 +1492,27 @@ action_stmt
 /*                              1*data-def-stmt */
 /*                          "}" stmtsep */
 input_stmt
-: 'input' '{' input_output_stmt_body '}'                 {}
+: 'input' '{' input_output_stmt_body '}'                       { $$ = new Abs($1, undefined,  $3);}
 ;
 
 input_output_stmt_body
-: input_output_stmt_body_stmt                            {}
-| input_output_stmt_body input_output_stmt_body_stmt   {}
+: input_output_stmt_body_stmt                                  { $$ = [$1]; }
+| input_output_stmt_body input_output_stmt_body_stmt           { $$ = $1; $$.push($2); }
 ;
 
 input_output_stmt_body_stmt
-: must_stmt                                            { $$ = $1; }
-| typedef_stmt                                         { $$ = $1; }
-| grouping_stmt                                        { $$ = $1; }
-| container_stmt                                       { $$ = $1; } /* data-def-stmt */
-| leaf_stmt                                            { $$ = $1; }
-| leaf_list_stmt                                       { $$ = $1; }
-| list_stmt                                            { $$ = $1; }
-| anydata_stmt                                         { $$ = $1; }
-| anyxml_stmt                                          { $$ = $1; }
-| choice_stmt                                          { $$ = $1; }
-| uses_stmt                                            { $$ = $1; }
-| unknown_stmt                                              { $$ = $1; } 
+: must_stmt                                                    { $$ = $1; }
+| typedef_stmt                                                 { $$ = $1; }
+| grouping_stmt                                                { $$ = $1; }
+| container_stmt                                               { $$ = $1; } /* data-def-stmt */
+| leaf_stmt                                                    { $$ = $1; }
+| leaf_list_stmt                                               { $$ = $1; }
+| list_stmt                                                    { $$ = $1; }
+| anydata_stmt                                                 { $$ = $1; }
+| anyxml_stmt                                                  { $$ = $1; }
+| choice_stmt                                                  { $$ = $1; }
+| uses_stmt                                                    { $$ = $1; }
+| unknown_stmt                                                 { $$ = $1; } 
 ;
 
 /*    output-stmt         = output-keyword optsep */
@@ -1523,7 +1523,7 @@ input_output_stmt_body_stmt
 /*                              1*data-def-stmt */
 /*                          "}" stmtsep */
 output_stmt
-: 'output' '{' input_output_stmt_body '}'                    {}
+: 'output' '{' input_output_stmt_body '}'                      {$$ = new Abs($1, undefined, $4); }
 ;
 
 /*    notification-stmt   = notification-keyword sep identifier-arg-str optsep */
@@ -1539,13 +1539,13 @@ output_stmt
 /*                               *data-def-stmt */
 /*                           "}") stmtsep */
 notification_stmt
-: 'notification' 'IDENTIFIER' ';'                             {}
-| 'notification' 'IDENTIFIER' '{' notification_stmt_body '}'  {}
+: 'notification' 'IDENTIFIER' ';'                             { $$ = new Abs($1, $2); }
+| 'notification' 'IDENTIFIER' '{' notification_stmt_body '}'  { $$ = new Abs($1, $2, $4); }
 ;
 
 notification_stmt_body
-: notification_stmt_body_stmt                                 {}
-| notification_stmt_body notification_stmt_body_stmt          {}
+: notification_stmt_body_stmt                                 { $$ = [$1]; }
+| notification_stmt_body notification_stmt_body_stmt          { $$ = $1; $$.push($1); }
 ;
 
 notification_stmt_body_stmt
@@ -1636,8 +1636,8 @@ notification_stmt_body_stmt
 /*                               *((yang-stmt / unknown-statement) optsep) */
 /*                            "}") stmtsep */
 unknown_stmt
-: 'IDENTIFIER' ':' 'IDENTIFIER' ';'                             {}
-|  'IDENTIFIER' ':' 'IDENTIFIER' string ';'                     {}
+: 'IDENTIFIER' ':' 'IDENTIFIER' ';'                           { $$ = new Abs($1, $2); }
+|  'IDENTIFIER' ':' 'IDENTIFIER' string ';'                   { $$ = new Abs($1, $2, $4); }
 /* | IDENTIFIER ':' IDENTIFIER '{' unknown_stmt_body '}' */
 ;
 
@@ -1746,7 +1746,7 @@ range_boundary
 /*    length-arg-str      = < a string that matches the rule > <length-arg > */
 /*    length-arg          = length-part *(optsep "|" optsep length-part) */
 length_arg
-: length_parts                                                               { $$ = $1; }
+: length_parts                                                               { $$ = new Range($1); }
 ;
 
 length_parts
@@ -1756,15 +1756,15 @@ length_parts
 
 /*    length-part         = length-boundary [optsep ".." optsep length-boundary] */
 length_part
-: length_boundary                                                            {}
-| length_boundary '..' length_boundary                                       {}
+: length_boundary                                                            { $$ = new RangePart($1); }
+| length_boundary '..' length_boundary                                       { $$ = new RangePart($1, $3); }
 ;
 
 /*    length-boundary     = min-keyword / max-keyword / non-negative-integer-value */
 length_boundary
-: 'min'                                                                      {}
-| 'max'                                                                      {}
-| 'INTEGER'                                                                  {}
+: 'min'                                                                      { $$ = Number.MIN_VALUE; }
+| 'max'                                                                      { $$ = Number.MAX_VALUE; }
+| 'INTEGER'                                                                  { $$ = $1; }
 ;
 
 /*    ;; Date */
@@ -1777,20 +1777,20 @@ length_boundary
 /*    schema-nodeid       = absolute-schema-nodeid / descendant-schema-nodeid */
 /*    absolute-schema-nodeid = 1*("/" node-identifier) */
 absolute_schema_nodeid
-: '/' node_identifier                                                            {}
-| absolute_schema_nodeid '/' node_identifier                                     {}
+: '/' node_identifier                                                            { $$ = [$1]; }
+| absolute_schema_nodeid '/' node_identifier                                     { $$ = $1; $$.push($2); }
 ;
 
 /*    descendant-schema-nodeid = node-identifier [absolute-schema-nodeid] */
 descendant_schema_nodeid
-: node_identifier                                                                {}
-| node_identifier absolute_schema_nodeid                                         {}
+: node_identifier                                                                { $$ = [$1];  }
+| node_identifier absolute_schema_nodeid                                         { $$ = $1; $$.push($2);  }
 ;
 
 /*    node-identifier     = [prefix ":"] identifier */
 node_identifier
-: 'IDENTIFIER'                                                                   {}
-| 'IDENTIFIER' ':' IDENTIFIER                                                    {}
+: 'IDENTIFIER'                                                                   { $$ = new QNamee($1);}
+| 'IDENTIFIER' ':' IDENTIFIER                                                    { $$ = new QNmae($2, $1); }
 ;
 
 /*    ;; Instance Identifiers */
@@ -1939,7 +1939,7 @@ string
 
 quoted_string
 : 'QUOTED_STRING_PART'                    { $$ = $1; }
-| quoted_string '+' 'QUOTED_STRING_PART'  {}
+| quoted_string '+' 'QUOTED_STRING_PART'  { $$ = $1; $$ += $1; }
 ;
 
 /*    string              = < an unquoted string as returned by > */
@@ -2086,4 +2086,28 @@ RangePart.prototype.toString = function () {
     }
     let upper = this.upper === Number.MAx_VALUE ? 'min' : this.upper;
     return `${lower}..${upper}`;
+}
+
+function Key(keys) {
+    this.keys = keys
+}
+
+Key.prototype.toString = function () {
+    return this.keys.join(' ');
+}
+
+function DescendantSchemaNodeId(pathItems)  {
+    this.pathItems = pethItems;
+}
+
+DescendantSchemaNodeId.prototype.toString = function () {
+    return this.pathitems.join('/');
+}
+
+function AbsoluteSchemaNodeId(pathItems)  {
+    this.pathItems = pethItems;
+}
+
+AbsoluteSchemaNodeId.prototype.toString = function () {
+    return '/' + this.pathitems.join('/');
 }
