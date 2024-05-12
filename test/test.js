@@ -32,7 +32,7 @@ function readModel(name) {
 }
 
 describe('test-container', () => {
-  const m = readModel('test-container.yang');
+  const m = readModel('comments.yang');
   console.log(m);
   console.log(toString(evaluate(m)));
 });

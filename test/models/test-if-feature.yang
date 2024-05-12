@@ -1,0 +1,13 @@
+module test-if-feature {
+    feature foo;
+    feature bar;
+    container A {
+        leaf a {
+            type string;
+        }
+    }
+    container B {
+        if-feature "foo or (not bar)";
+        presence true;
+    }
+}

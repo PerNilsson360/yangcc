@@ -1,0 +1,7 @@
+module choice-without-case {
+    choice A {
+        leaf a {
+            type string;
+        }
+    }
+}

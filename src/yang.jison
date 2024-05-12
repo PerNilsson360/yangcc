@@ -66,7 +66,7 @@ L               [a-zA-Z_]
 "fraction-digits"                                               { this.begin('integer'); return 'fraction-digits'; }
 "grouping"                                                      { this.begin('identifier'); return 'grouping'; }
 "identity"                                                      { this.begin('identifier'); return 'identity'; }
-"if-feature"                                                    { this.begin('qname'); return 'if-feature'; }
+"if-feature"                                                    { this.begin('str'); return 'if-feature'; }
 "import"                                                        { this.begin('identifier'); return 'import'; }
 "include"                                                       { this.begin('identifier'); return 'include'; }
 "input"                                                         { return'input'; }
@@ -134,10 +134,10 @@ L               [a-zA-Z_]
 <unknown>({L}|"_")({L}|{DIGIT}|[-_.])*                                                 { this.begin('str'); return 'IDENTIFIER'; }
 <identifier,qname,schema_path>({L}|"_")({L}|{DIGIT}|[-_.])*                            { return 'IDENTIFIER'; }
 <str>"\""                                                                              { this.begin('double_quoted_string'); }
-<double_quoted_string>([^"])*                                                          { return 'QUOTED_STRING_PART'} 
+<double_quoted_string>([^"])+                                                          { return 'QUOTED_STRING_PART'} 
 <double_quoted_string>"\""                                                             { this.begin('str'); } 
 <str>"'"                                                                               { this.begin('single_quoted_string'); }
-<single_quoted_string>([^'])*                                                          { return 'QUOTED_STRING_PART' }
+<single_quoted_string>([^'])+                                                          { return 'QUOTED_STRING_PART' }
 <single_quoted_string>"'"                                                              { this.begin('str'); } 
 <str>([^\x09\x0A\x0B\x0D\x20;{'\""])([^\x09\x0A\x0B\x0D\x20;{"])*                      { return 'UNQUOTED_STRING'; }
 [\x09\x0A\x0B\x0D\x20]		                                                           {/* skip whitespaces in intital start condition */}
@@ -148,7 +148,7 @@ L               [a-zA-Z_]
 <comment>"*"+[^*/\n]*                                                                  { /* eat up '*'s not followed by '/'s */ }
 <comment>\n                                                                            {}
 <comment>"*"+"/"                                                                       { this.begin('INITIAL'); }
-<*>.			                                                                       { cosnole.log('FIXME: uhandled char') }
+<*>.			                                                                       { console.log('FIXME: unhandled char') }
 
 /lex
 
@@ -523,7 +523,7 @@ feature_stmt_body_stmt
 
 /*    if-feature-stmt     = if-feature-keyword sep if-feature-expr-str stmtend */
 if_feature_stmt
-: 'if-feature' identifier_ref ';'                                  { $$ = new Abs($1, $2); } /* @todo implement complete grammar */
+: 'if-feature' string ';'                                  { $$ = new Abs($1, $2); } /* @todo implement complete grammar */
 ;
 
 /*    if-feature-expr-str = < a string that matches the rule > < if-feature-expr > */
@@ -1933,8 +1933,8 @@ identifier_ref
 /*    identifier-ref      = [prefix ":"] identifier */
 
 string
-: 'UNQUOTED_STRING'                       { $$ = $1; }
-| quoted_string                           { $$ = $1; }
+: 'UNQUOTED_STRING'                       { $$ = new Str($1); }
+| quoted_string                           { $$ = new Str($1); }
 ;
 
 quoted_string
@@ -2043,6 +2043,14 @@ function Abs(type, arg, body) {
     if (typeof this.body === 'undefined') {
         this.body = [];
     }
+}
+
+function Str(string) {
+    this.string = string;
+}
+
+Str.prototype.toString = function () {
+    return `'${this.string}'`;  // TODO escape "
 }
 
 function QName(name, prefix) {
