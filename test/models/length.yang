@@ -1,0 +1,7 @@
+module length {
+    leaf a {
+        type string {
+            length 4;
+        }
+    }
+}

@@ -22,6 +22,8 @@
 
 %lex
 
+%options flex
+
 DIGIT           [0-9]
 L               [a-zA-Z_]
 
@@ -670,7 +672,7 @@ length_body_stmt
 /*                            "}") stmtsep */
 pattern_stmt
 : 'pattern' string ';'                                                { $$ = new Abs($1, $2);}
-| 'pattern' string '{' pattern_stmt_body '}' ';'                      { $$ = new Abs($1, $2, $4);}
+| 'pattern' string '{' pattern_stmt_body '}'                          { $$ = new Abs($1, $2, $4);}
 ;
 
 pattern_stmt_body
@@ -866,7 +868,7 @@ must_stmt_body_stmt
 
 /*    error-message-stmt  = error-message-keyword sep string stmtend */
 error_message_stmt
-: 'error_message' string ';'                                        { $$ = new Abs($1, $2); }
+: 'error-message' string ';'                                        { $$ = new Abs($1, $2); }
 ;
 
 /*    error-app-tag-stmt  = error-app-tag-keyword sep string stmtend */
@@ -1737,10 +1739,10 @@ range_part
 
 /*    range-boundary      = min-keyword / max-keyword / integer-value / decimal-value */
 range_boundary
-: 'min'                                                                        { $$ = Number.MIN_VALUE}
-| 'max'                                                                        { $$ = Number.MAX_VALUE}
-| 'INTEGER'                                                                    { $$ = $1; }
-| 'DECIMAL'                                                                    { $$ = $1; }
+/*: 'min'                                                                        { $$ = Number.MIN_VALUE}
+| 'max'                                                                        { $$ = Number.MAX_VALUE} */
+: 'INTEGER'                                                                    { $$ = $1; }
+/*| 'DECIMAL'                                                                    { $$ = $1; }*/
 ;
 
 /*    ;; Lengths */

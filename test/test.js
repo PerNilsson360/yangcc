@@ -32,7 +32,7 @@ function readModel(name) {
 }
 
 describe('test-container', () => {
-  const m = readModel('comments.yang');
+  const m = readModel('pattern.yang');
   console.log(m);
   console.log(toString(evaluate(m)));
 });

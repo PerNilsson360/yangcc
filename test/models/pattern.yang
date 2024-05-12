@@ -1,0 +1,9 @@
+module pattern {
+    leaf a {
+        type string {
+            pattern "foo" {
+                error-message "must be foo";
+            }
+        }
+    }
+}
