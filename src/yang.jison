@@ -144,11 +144,12 @@ L               [a-zA-Z_]
 <identifier,str,qname,schema_path,date,range,len,integer,status>[\x09\x0A\x0B\x0D\x20] { }
 <identifier,qname,schema_path,date,range,len,integer>"\""                              { /* these are *-arg-str in grammar so need to skip quotes */ }
 "/*"                                                                                   { this.begin('comment'); }
-<comment>[^*\n]*                                                                       { /* eat anything that's not a '*' */ }
-<comment>"*"+[^*/\n]*                                                                  { /* eat up '*'s not followed by '/'s */ }
+<comment>[^*\n]+                                                                       { /* eat anything that's not a '*' */ }
+<comment>"*"+[^*/\n]+                                                                  { /* eat up '*'s not followed by '/'s */ }
 <comment>\n                                                                            {}
 <comment>"*"+"/"                                                                       { this.begin('INITIAL'); }
-<*>.			                                                                       { console.log('FIXME: unhandled char') }
+"//"[^\n]*                                                                              { /* c++ style one line comment*/ }  
+<*>.			                                                                       { console.log('FIXME: unhandled char'); }
 
 /lex
 

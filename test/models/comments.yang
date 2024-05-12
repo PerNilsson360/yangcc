@@ -1,4 +1,7 @@
 module comments {
     /* hi */
     // hello
+    leaf a {
+        type string;
+    }
 }
