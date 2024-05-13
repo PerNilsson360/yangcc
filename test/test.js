@@ -32,7 +32,7 @@ function readModel(name) {
 }
 
 describe('test-container', () => {
-  const m = readModel('pattern.yang');
+  const m = readModel('ietf-netconf.yang');
   console.log(m);
   console.log(toString(evaluate(m)));
 });

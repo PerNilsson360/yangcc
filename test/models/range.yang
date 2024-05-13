@@ -1,7 +1,9 @@
 module range {
     leaf a {
         type int32 {
-            range 1;
+            range 1..4 {
+                error-message "valid range is 1 to 4";
+            }
         }
     }
 }

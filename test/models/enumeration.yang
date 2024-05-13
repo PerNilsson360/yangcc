@@ -1,0 +1,8 @@
+module enumeration {
+    leaf a {
+        type enumeration {
+            enum A;
+            enum B;
+        }
+    }
+}

@@ -7,7 +7,7 @@
     "compile": "jison src/yang.jison --debug -o src/yang.js",
     "lint": "eslint test/test.js",
     "test": "mocha",
-    "clean": "rm -r *~ src/*~ test/*~ src/yang.js"
+    "clean": "rm -r *~ src/*~ test/*~ test/models/*~ src/yang.js"
   },
   "author": "Per Nilson",
   "license": "MIT",

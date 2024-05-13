@@ -1,7 +1,9 @@
 module length {
     leaf a {
         type string {
-            length 4;
+            length 4..10 {
+                error-app-tag for-ten;
+            }
         }
     }
 }

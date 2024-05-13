@@ -58,7 +58,7 @@ L               [a-zA-Z_]
 "container"	                                                    { this.begin('identifier'); return 'container'; }
 "default"                                                       { this.begin('str'); return 'default'; } 
 "description"                                                   { this.begin('str'); return 'description'; }
-"enum"                                                          { this.begin('str'); return' enum'; }
+"enum"                                                          { this.begin('str'); return 'enum'; }
 "error-app-tag"                                                 { this.begin('str'); return 'error-app-tag'; }
 "error-message"                                                 { this.begin('str'); return 'error-message'; }
 "extension"                                                     { this.begin('identifier'); return 'extension'; }
@@ -75,7 +75,7 @@ L               [a-zA-Z_]
 "key"                                                           { this.begin('qname'); return 'key'; }
 "leaf"	                                                        { this.begin('identifier'); return 'leaf'; }      
 "leaf-list"                                                     { this.begin('identifier'); return 'leaf-list'; }
-"length"                                                        { this.begin('length'); return 'length'; }
+"length"                                                        { this.begin('len'); return 'length'; }
 "list"                                                          { this.begin('identifier'); return'list'; }       
 "mandatory"                                                     { return'mandatory'; }
 "max-elements"                                                  { this.begin('integer'); return max-elements; }
@@ -109,7 +109,7 @@ L               [a-zA-Z_]
 "uses"                                                          { this.begin('qname'); return 'uses'; }
 "value"                                                         { this.begin('integer'); return 'value'; }
 "when"                                                          { this.begin('str'); return 'when'; }
-"yang-version"                                                  { this.begin('str'); return 'yang-version'; }
+"yang-version"                                                                         { this.begin('str'); return 'yang-version'; }
 "yin-element"                                                                          { return 'yin-element'; }
 <status>"current"                                                                      { return 'current'; }
 <status>"obsolete"                                                                     { return 'obsolete'; }
@@ -571,7 +571,7 @@ typedef_stmt_body_stmt
 type_stmt
 : 'type' identifier_ref ';'                                          { $$ = new Abs($1, $2); }
 | 'type' identifier_ref '{' '}'                                      { $$ = new Abs($1, $2); }
-| 'type' identifier_ref '{' type_body_stmts '}'                      { $$ = new Abs($1, $2, $3); }
+| 'type' identifier_ref '{' type_body_stmts '}'                      { $$ = new Abs($1, $2, $4); }
 ;
 
 /*    type-body-stmts     = numerical-restrictions / */
@@ -616,7 +616,22 @@ type_body_stmt
 /*                            "}") stmtsep */
 range_stmt
 : 'range' range_arg  ';'                                             { $$ = new Abs($1, $2); }
+| 'range' range_arg '{' range_stmt_body '}'                          { $$ = new Abs($1, $2, $4); }
 ;                          
+
+range_stmt_body
+: range_stmt_body_stmt                                               { $$ = [$1];}
+| range_stmt_body range_stmt_body_stmt                               { $$ = $1; $$.push($2); }
+;
+
+range_stmt_body_stmt
+: error_message_stmt                                                 { $$ = $1; }
+| error_app_tag_stmt                                                 { $$ = $1; }
+| description_stmt                                                   { $$ = $1; }
+| reference_stmt                                                     { $$ = $1; }
+| unknown_stmt                                                       { $$ = $1; } 
+;
+
 
 /*    decimal64-specification = ;; these stmts can appear in any order */
 /*                              fraction-digits-stmt */
@@ -672,7 +687,7 @@ length_body_stmt
 /*                            "}") stmtsep */
 pattern_stmt
 : 'pattern' string ';'                                                { $$ = new Abs($1, $2);}
-| 'pattern' string '{' pattern_stmt_body '}'                          { $$ = new Abs($1, $2, $4);}
+| 'pattern' string '{' pattern_stmt_body '}'                          { $$ = new Abs($1, $2, $4); }
 ;
 
 pattern_stmt_body
@@ -1739,10 +1754,10 @@ range_part
 
 /*    range-boundary      = min-keyword / max-keyword / integer-value / decimal-value */
 range_boundary
-/*: 'min'                                                                        { $$ = Number.MIN_VALUE}
-| 'max'                                                                        { $$ = Number.MAX_VALUE} */
-: 'INTEGER'                                                                    { $$ = $1; }
-/*| 'DECIMAL'                                                                    { $$ = $1; }*/
+: 'min'                                                                        { $$ = Number.MIN_VALUE}
+| 'max'                                                                        { $$ = Number.MAX_VALUE}
+| 'INTEGER'                                                                    { $$ = $1; }
+| 'DECIMAL'                                                                    { $$ = $1; }
 ;
 
 /*    ;; Lengths */
